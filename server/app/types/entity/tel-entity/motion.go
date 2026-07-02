@@ -13,12 +13,12 @@ import "dubmer-bono/app/types/entity"
 */
 
 type CarMotion struct {
-	WorldPosition   entity.Coordinates[float32]
-	WorldVelocity   entity.Coordinates[float32]
-	WorldForwardDir entity.Coordinates[int16]
+	WorldPosition   entity.Coordinates[float32] //World space position in meters
+	WorldVelocity   entity.Coordinates[float32] //Velocity in that direction in m/s
+	WorldForwardDir entity.Coordinates[int16]   //Worls Space Froward Direction Normalized
 	WorldRightDir   entity.Coordinates[int16]
 	GForce          entity.LatLon
-	Orientation     entity.Orientation
+	Orientation     entity.Orientation //Drone Stuff
 }
 
 type MotionPacket struct {

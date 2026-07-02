@@ -157,6 +157,7 @@ var TrackIDs = map[uint16]string{
 	32: "Losail",
 	39: "Silverstone (Reverse)",
 	40: "Austria (Reverse)",
+	41: "Zandvoort (Reverse)",
 }
 
 var NationalityIDs = map[uint16]string{
@@ -248,6 +249,7 @@ var NationalityIDs = map[uint16]string{
 	59: "Pakistani",
 	90: "Filipino",
 	30: "Ghanaian",
+	60: "Panamanian",
 }
 
 var SessionTypes = map[uint16]string{
@@ -284,6 +286,7 @@ var SurfaceTypes = map[uint16]string{
 	8:  "Water",
 	9:  "Cobblestone",
 	10: "Metal",
+	11: "Ridged",
 }
 
 var PenaltyTypes = map[uint16]string{
@@ -304,6 +307,7 @@ var PenaltyTypes = map[uint16]string{
 	14: "This and previous lap invalidated",
 	15: "This and previous lap invalidated without reason",
 	16: "Retired",
+	17: "Black flag timer",
 }
 
 var InfringementTypes = map[uint16]string{
@@ -361,4 +365,5 @@ var InfringementTypes = map[uint16]string{
 	51: "Retry penalty",
 	52: "Illegal time gain",
 	53: "Mandatory pitstop",
+	54: "Attribute assigned",
 }
