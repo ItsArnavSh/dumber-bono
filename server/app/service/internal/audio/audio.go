@@ -2,60 +2,44 @@ package audio
 
 import (
 	"context"
-	"encoding/binary"
 	"fmt"
 
 	"github.com/gordonklaus/portaudio"
+	"github.com/maxhawkins/go-webrtcvad"
 )
 
-// Listen starts an audio stream and pipes chunks into the receiver channel.
-// It will block until the context is cancelled.
-func Listen(ctx context.Context, receiver chan<- []byte) error {
-	err := portaudio.Initialize()
-	if err != nil {
-		return fmt.Errorf("failed to initialize portaudio: %w", err)
-	}
-	// Ensure termination happens when the function exits
-	defer portaudio.Terminate()
+const (
+	SampleRate = 16000
+	Channels   = 1
+	ChunkSize  = 320 // 20ms
+)
 
-	const bufferSize = 512
-	inputBuffer := make([]int16, bufferSize)
-
-	// 1 input channel, 0 output, 16kHz sample rate
-	stream, err := portaudio.OpenDefaultStream(1, 0, 16000, bufferSize, inputBuffer)
-	if err != nil {
-		return fmt.Errorf("failed to open stream: %w", err)
-	}
-	defer stream.Close()
-
-	if err := stream.Start(); err != nil {
-		return fmt.Errorf("failed to start stream: %w", err)
-	}
-	defer stream.Stop()
-
-	fmt.Println("Audio listener started...")
-
-	for {
-		select {
-		case <-ctx.Done():
-			fmt.Println("Audio listener stopping...")
-			return ctx.Err()
-		default:
-			// Read() blocks until buffer is full
-			if err := stream.Read(); err != nil {
-				fmt.Printf("Read error: %v\n", err)
-				continue
-			}
-
-			// Send a copy of the buffer to avoid data races
-			// since we are reusing inputBuffer in the next iteration
-			chunk := make([]byte, len(inputBuffer)*2)
-			for i, v := range inputBuffer {
-				binary.LittleEndian.PutUint16(chunk[i*2:], uint16(v))
-			}
-			receiver <- chunk
-		}
-	}
+type Audio struct {
+	incoming chan []byte
+	outgoing chan []byte
+	vad      *webrtcvad.VAD
 }
 
-//Use Vosk Instead
+func NewAudioHandler(ctx context.Context, incoming, outgoing chan []byte) (Audio, error) {
+	vad, err := webrtcvad.New()
+	if err != nil {
+		return Audio{}, err
+	}
+	vad.SetMode(3)
+	return Audio{
+		incoming: incoming,
+		outgoing: outgoing,
+		vad:      vad,
+	}, nil
+}
+
+func (a *Audio) SetupPortAudio(ctx context.Context) error {
+	err := portaudio.Initialize()
+	return err
+}
+
+func (a *Audio) ProcessWAVChunks(ctx context.Context) {
+	for _ = range a.incoming {
+		fmt.Println("Received the Speech Chunk")
+	}
+}
