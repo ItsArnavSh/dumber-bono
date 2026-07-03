@@ -2,7 +2,7 @@ package udp
 
 import (
 	"context"
-	"dubmer-bono/app/api/udp/mappers"
+	mappers "dubmer-bono/app/api/udp/parsers"
 	"dubmer-bono/app/types/entity/consts"
 	"fmt"
 	"net"
@@ -54,7 +54,7 @@ func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 	fmt.Println(header)
 	switch header.PacketID {
 	case 0:
-		fmt.Println("Motion")
+		mappers.ParseMotionPacket(payload)
 	case 1:
 		fmt.Println("Session")
 	case 2:
