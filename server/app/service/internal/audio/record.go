@@ -43,14 +43,12 @@ func (a *Audio) RecordAudio(ctx context.Context) {
 		speech = speech && (RMS(frame) > float64(Threshold))
 		switch {
 		case speech:
-			fmt.Println("Speech")
 			recording = true
 			silenceFrames = 0
 			pcmBuffer = append(pcmBuffer, frame...)
 
 		case recording:
 			// keep short pauses
-			fmt.Println("Silence")
 			pcmBuffer = append(pcmBuffer, frame...)
 			silenceFrames++
 

@@ -12,12 +12,12 @@ type MCP struct {
 
 func NewMCPServer(ctx context.Context) {
 
-	mcpServer := server.NewMCPServer(
+	_ = server.NewMCPServer(
 		"bono-tools",
 		"1.0.0",
 	)
 
-	runQueryTool := mcp.NewTool("run_query",
+	_ = mcp.NewTool("run_query",
 		mcp.WithDescription("Execute a read-only SELECT query against the ClickHouse analytics database. Only SELECT/WITH/EXPLAIN statements are allowed. Results are returned as JSON."),
 		mcp.WithString("sql",
 			mcp.Required(),
