@@ -4,7 +4,7 @@ import (
 	"math"
 )
 
-var Threshold = 8000
+var Threshold = 7000
 
 func BackgroundTuner() {
 

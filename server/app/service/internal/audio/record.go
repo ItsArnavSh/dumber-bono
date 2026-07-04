@@ -38,9 +38,9 @@ func (a *Audio) RecordAudio(ctx context.Context) {
 
 		frame := make([]int16, len(samples))
 		copy(frame, samples)
-
 		speech, _ := a.vad.Process(16000, PCM16ToBytes(frame))
 		speech = speech && (RMS(frame) > float64(Threshold))
+
 		switch {
 		case speech:
 			recording = true
@@ -63,8 +63,8 @@ func (a *Audio) RecordAudio(ctx context.Context) {
 				wav, err := PCM16ToWAV(pcmBuffer, 16000, 1)
 				if err == nil {
 					a.incoming <- wav
-				}
 
+				}
 				pcmBuffer = pcmBuffer[:0]
 				recording = false
 				silenceFrames = 0

@@ -61,7 +61,7 @@ services:
     image: rhasspy/wyoming-piper
     container_name: piper
     restart: unless-stopped
-    command: ["--voice", "en_US-lessac-medium"]
+    command: ["--voice", "en_GB-alan-medium"]
     ports:
       - "5000:5000" # HTTP TTS endpoint
       - "10200:10200" # Wyoming protocol

@@ -35,13 +35,12 @@ func Transcribe(ctx context.Context, wav []byte) (string, error) {
 	prompt := `This is a Formula 1 race engineer conversation.
 
 Common terminology:
-Formula One, FIA, DRS, ERS, KERS, DRS detection, Safety Car, Virtual Safety Car,
-Red Flag, Yellow Flag, Blue Flag, Green Flag, Formation Lap, Out Lap, In Lap,
-Push Lap, Cooldown Lap, Undercut, Overcut, Dirty Air, Clean Air, Slipstream,
+Copy, DRS, ERS, KERS, DRS detection,
+Push Lap, Cooldown Lap, Undercut, Overcut, Dirty Air, Clean Air,
 Brake Bias, Differential, Engine Braking, Lift and Coast, Lock Up, Wheelspin,
-Understeer, Oversteer, Apex, Chicane, Hairpin, Kerb, Sector One, Sector Two, Sector Three,
-Soft Tyres, Medium Tyres, Hard Tyres, Intermediate Tyres, Wet Tyres,
-Pit Window, Box, Double Stack, Fastest Lap, Delta Time, Track Limits.
+Understeer, Oversteer, Sector One, Sector Two, Sector Three,
+Soft, Medium, Hard, Intermediate, Wet, Tyres, Fuel, Puncture,
+Pit Window, Box,  Fastest Lap, Delta Time, Track Limits.
 
 Driver names:
 Verstappen, Norris, Piastri, Leclerc, Hamilton, Russell, Sainz, Alonso,
