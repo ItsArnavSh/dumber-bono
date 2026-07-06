@@ -22,6 +22,6 @@ type CarMotion struct {
 }
 
 type MotionPacket struct {
-	header UDPHeader
-	cars   [22]CarMotion //Data for all the cars
+	Header UDPHeader
+	Cars   [22]CarMotion //Data for all the cars
 }

@@ -16,20 +16,20 @@ type LiveryColour struct {
 }
 
 type ParticipantData struct {
-	AIControlled    bool
-	DriverId        uint8 // see appendix, 255 if network human
-	NetworkId       uint8 // unique identifier for network players
-	TeamId          uint8 // see appendix
-	MyTeam          bool
-	RaceNumber      uint8
-	Nationality     uint8  // see appendix
-	Name            string // UTF-8, truncated with … (U+2026) if too long
-	YourTelemetry   string
-	ShowOnlineNames bool
-	TechLevel       uint16 // F1 World tech level
-	Platform        string
-	NumColours      uint8 // Number of colours valid for this car
-	LiveryColours   [4]LiveryColour
+	// AIControlled    bool
+	DriverId uint8 // see appendix, 255 if network human
+	// NetworkId       uint8 // unique identifier for network players
+	TeamId        uint8 // see appendix
+	MyTeam        bool
+	RaceNumber    uint8
+	Nationality   uint8  // see appendix
+	Name          string // UTF-8, truncated with … (U+2026) if too long
+	YourTelemetry string
+	// ShowOnlineNames bool
+	// TechLevel       uint16 // F1 World tech level
+	// Platform        string
+	// NumColours      uint8 // Number of colours valid for this car
+	// LiveryColours   [4]LiveryColour
 }
 
 type PacketParticipantsData struct {

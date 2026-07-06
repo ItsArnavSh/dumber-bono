@@ -1,11 +1,5 @@
 package parsers
 
-import (
-	"bytes"
-	"encoding/binary"
-	"fmt"
-)
-
 // CarMotionData mirrors the C struct CarMotionData field-for-field.
 type CarMotionData struct {
 	WorldPositionX     float32
@@ -32,16 +26,4 @@ type CarMotionData struct {
 type PacketMotionData struct {
 	Header        PacketHeader
 	CarMotionData [22]CarMotionData
-}
-
-// ParseMotionPacket decodes a raw UDP payload into a PacketMotionData.
-func ParseMotionPacket(payload []byte) (*PacketMotionData, error) {
-	var packet PacketMotionData
-
-	reader := bytes.NewReader(payload)
-	if err := binary.Read(reader, binary.LittleEndian, &packet); err != nil {
-		return nil, fmt.Errorf("decode motion packet: %w", err)
-	}
-
-	return &packet, nil
 }

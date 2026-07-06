@@ -42,6 +42,6 @@ type LapData struct {
 }
 
 type LapDataPacket struct {
-	header  UDPHeader
+	Header  UDPHeader
 	LapData [22]LapData
 }

@@ -2,7 +2,6 @@ package udp
 
 import (
 	"context"
-	mappers "dubmer-bono/app/api/udp/parsers"
 	"dubmer-bono/app/types/entity/consts"
 	"fmt"
 	"net"
@@ -45,47 +44,4 @@ func NewUDPServer(ctx context.Context, logger *zap.SugaredLogger, port uint16) e
 
 	server.logger.Info("Started The UDP Server")
 	return nil
-}
-func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
-	header, err := mappers.ParseHeader(payload)
-	if err != nil {
-		u.logger.Errorf("Error Parsing Header %v", err)
-	}
-	fmt.Println(header)
-	switch header.PacketID {
-	case 0:
-		mappers.ParseMotionPacket(payload)
-	case 1:
-		fmt.Println("Session")
-	case 2:
-		fmt.Println("Lap Data")
-	case 3:
-		fmt.Println("Event")
-	case 4:
-		fmt.Println("Participants")
-	case 5:
-		fmt.Println("Car Setups")
-	case 6:
-		fmt.Println("Car Telemetry")
-	case 7:
-		fmt.Println("Car Status")
-	case 8:
-		fmt.Println("Final Classification")
-	case 9:
-		fmt.Println("Lobby Info")
-	case 10:
-		fmt.Println("Car Damage")
-	case 11:
-		fmt.Println("Session History")
-	case 12:
-		fmt.Println("Tyre Sets")
-	case 13:
-		fmt.Println("Motion Ex")
-	case 14:
-		fmt.Println("Time Trial")
-	case 15:
-		fmt.Println("Lap Positions")
-	default:
-		fmt.Printf("Unknown PacketID: %d\n", header.PacketID)
-	}
 }

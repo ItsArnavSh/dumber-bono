@@ -13,8 +13,8 @@ type TyreSetData struct {
 }
 
 type TyreSetPacket struct {
-	header     UDPHeader
-	carid      uint8 //Index to which it relates to
-	tyredata   [20]TyreSetData
-	fittedtyre uint8 //Fitted tyre
+	Header     UDPHeader
+	Carid      uint8 //Index to which it relates to
+	Tyredata   [20]TyreSetData
+	Fittedtyre uint8 //Fitted tyre
 }

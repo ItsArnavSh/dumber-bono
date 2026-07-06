@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func (a *Audio) ProcessWAVChunks(ctx context.Context) {
+func (a *Audio) TranscribeWAV(ctx context.Context) {
 	for wav := range a.incoming {
 		text, err := Transcribe(ctx, wav)
 		if err != nil {

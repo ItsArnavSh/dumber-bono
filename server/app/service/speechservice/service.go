@@ -19,7 +19,7 @@ func StartListner(ctx context.Context) {
 
 	ahandler, _ := audio.NewAudioHandler(ctx, incoming, outgoing, textchan)
 	ahandler.SetupPortAudio(ctx)
-	go ahandler.ProcessWAVChunks(ctx)
+	go ahandler.TranscribeWAV(ctx)
 	go ahandler.RecordAudio(ctx)
 	go ahandler.TTS(ctx)
 	go ahandler.PlayPCM(ctx)

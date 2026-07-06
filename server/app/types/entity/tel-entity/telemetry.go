@@ -10,16 +10,16 @@ Version: 1
 */
 
 type CarTelemetryData struct {
-	Speed                   uint16  // Speed of car in kilometres per hour
-	Throttle                float32 // Amount of throttle applied (0.0 to 1.0)
-	Steer                   float32 // Steering (-1.0 full lock left to 1.0 full lock right)
-	Brake                   float32 // Amount of brake applied (0.0 to 1.0)
-	Clutch                  uint8   // Amount of clutch applied (0 to 100)
-	Gear                    int8    // Gear selected (1-8, N=0, R=-1)
-	EngineRPM               uint16
-	DRS                     bool
-	RevLightsPercent        uint8     // Rev lights indicator (percentage)
-	RevLightsBitValue       uint16    // bit 0 = leftmost LED, bit 14 = rightmost LED
+	Speed     uint16  // Speed of car in kilometres per hour
+	Throttle  float32 // Amount of throttle applied (0.0 to 1.0)
+	Steer     float32 // Steering (-1.0 full lock left to 1.0 full lock right)
+	Brake     float32 // Amount of brake applied (0.0 to 1.0)
+	Clutch    uint8   // Amount of clutch applied (0 to 100)
+	Gear      int8    // Gear selected (1-8, N=0, R=-1)
+	EngineRPM uint16
+	DRS       bool
+	// RevLightsPercent        uint8     // Rev lights indicator (percentage)
+	// RevLightsBitValue       uint16    // bit 0 = leftmost LED, bit 14 = rightmost LED
 	BrakesTemperature       [4]uint16 // Brakes temperature (celsius)
 	TyresSurfaceTemperature [4]uint8  // Tyres surface temperature (celsius)
 	TyresInnerTemperature   [4]uint8  // Tyres inner temperature (celsius)
