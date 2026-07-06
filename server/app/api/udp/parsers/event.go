@@ -1,5 +1,11 @@
 package parsers
 
+import (
+	"bytes"
+	"encoding/binary"
+	"fmt"
+)
+
 // FastestLap mirrors the C struct FastestLap.
 type FastestLap struct {
 	VehicleIdx uint8   // Vehicle index of car achieving fastest lap
@@ -121,4 +127,59 @@ type PacketEventData struct {
 	Header          PacketHeader
 	EventStringCode [4]uint8
 	EventDetails    EventDataDetails
+}
+
+func ParseEventPacket(payload []byte) (*PacketEventData, error) {
+	reader := bytes.NewReader(payload)
+
+	var header PacketHeader
+	if err := binary.Read(reader, binary.LittleEndian, &header); err != nil {
+		return nil, fmt.Errorf("decode event header: %w", err)
+	}
+
+	var code [4]uint8
+	if err := binary.Read(reader, binary.LittleEndian, &code); err != nil {
+		return nil, fmt.Errorf("decode event code: %w", err)
+	}
+
+	packet := &PacketEventData{
+		Header:          header,
+		EventStringCode: code,
+	}
+
+	codeStr := bytesToEventCode(code)
+
+	switch codeStr {
+	case "FTLP":
+		var d FastestLap
+		if err := binary.Read(reader, binary.LittleEndian, &d); err != nil {
+			return nil, fmt.Errorf("decode FastestLap: %w", err)
+		}
+		packet.EventDetails.FastestLap = d
+	case "RTMT":
+		var d Retirement
+		if err := binary.Read(reader, binary.LittleEndian, &d); err != nil {
+			return nil, fmt.Errorf("decode Retirement: %w", err)
+		}
+		packet.EventDetails.Retirement = d
+	case "BUTN":
+		var d Buttons
+		if err := binary.Read(reader, binary.LittleEndian, &d); err != nil {
+			return nil, fmt.Errorf("decode Buttons: %w", err)
+		}
+		packet.EventDetails.Buttons = d
+	case "SSTA", "SEND", "DRSE", "CHQF", "RDFL", "LGOT":
+		// no payload
+	default:
+		return nil, fmt.Errorf("unknown event code: %s", codeStr)
+	}
+
+	return packet, nil
+}
+func bytesToEventCode(code [4]uint8) string {
+	n := 0
+	for n < len(code) && code[n] != 0 {
+		n++
+	}
+	return string(code[:n])
 }

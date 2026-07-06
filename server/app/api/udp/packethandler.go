@@ -7,12 +7,16 @@ import (
 	"net"
 )
 
+// VerboseLogging toggles full struct dumps for every parsed/mapped packet.
+// Set to true to log the packet type and all its contents; false to stay quiet
+// except for errors.
+var VerboseLogging = true
+
 func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 	header, err := parsers.ParseHeader(payload)
 	if err != nil {
 		u.logger.Errorf("Error Parsing Header %v", err)
 	}
-	fmt.Println(header)
 
 	switch header.PacketID {
 	case 0:
@@ -25,6 +29,9 @@ func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 		if err != nil {
 			u.logger.Errorf("Error mapping Motion packet: %v", err)
 			return
+		}
+		if VerboseLogging {
+			u.logger.Infof("Motion packet: %+v", motion)
 		}
 		_ = motion
 		//Call Save From Here
@@ -40,6 +47,9 @@ func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 			u.logger.Errorf("Error mapping Session packet: %v", err)
 			return
 		}
+		if VerboseLogging {
+			u.logger.Infof("Session packet: %+v", session)
+		}
 		_ = session
 		//Call Save From Here
 
@@ -54,11 +64,14 @@ func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 			u.logger.Errorf("Error mapping LapData packet: %v", err)
 			return
 		}
+		if VerboseLogging {
+			u.logger.Infof("LapData packet: %+v", lapData)
+		}
 		_ = lapData
 		//Call Save From Here
 
 	case 3:
-		data, err := parsers.ParsePacket[parsers.PacketEventData](payload)
+		data, err := parsers.ParseEventPacket(payload)
 		if err != nil {
 			u.logger.Errorf("Error parsing Event packet: %v", err)
 			return
@@ -67,6 +80,9 @@ func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 		if err != nil {
 			u.logger.Errorf("Error mapping Event packet: %v", err)
 			return
+		}
+		if VerboseLogging {
+			u.logger.Infof("Event packet: %+v", event)
 		}
 		_ = event
 		//Call Save From Here
@@ -82,6 +98,9 @@ func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 			u.logger.Errorf("Error mapping Participants packet: %v", err)
 			return
 		}
+		if VerboseLogging {
+			u.logger.Infof("Participants packet: %+v", participants)
+		}
 		_ = participants
 		//Call Save From Here
 
@@ -95,6 +114,9 @@ func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 		if err != nil {
 			u.logger.Errorf("Error mapping CarSetup packet: %v", err)
 			return
+		}
+		if VerboseLogging {
+			u.logger.Infof("CarSetup packet: %+v", setup)
 		}
 		_ = setup
 		//Call Save From Here
@@ -110,6 +132,9 @@ func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 			u.logger.Errorf("Error mapping CarTelemetry packet: %v", err)
 			return
 		}
+		if VerboseLogging {
+			u.logger.Infof("CarTelemetry packet: %+v", telemetry)
+		}
 		_ = telemetry
 		//Call Save From Here
 
@@ -124,15 +149,21 @@ func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 			u.logger.Errorf("Error mapping CarStatus packet: %v", err)
 			return
 		}
+		if VerboseLogging {
+			u.logger.Infof("CarStatus packet: %+v", status)
+		}
 		_ = status
 		//Call Save From Here
 
 	case 8:
 		// TODO: PacketFinalClassificationData has no mapper yet.
-		_, err := parsers.ParsePacket[parsers.PacketFinalClassificationData](payload)
+		data, err := parsers.ParsePacket[parsers.PacketFinalClassificationData](payload)
 		if err != nil {
 			u.logger.Errorf("Error parsing FinalClassification packet: %v", err)
 			return
+		}
+		if VerboseLogging {
+			u.logger.Infof("FinalClassification packet (raw, no mapper yet): %+v", data)
 		}
 
 	case 9:
@@ -145,6 +176,9 @@ func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 		if err != nil {
 			u.logger.Errorf("Error mapping LobbyInfo packet: %v", err)
 			return
+		}
+		if VerboseLogging {
+			u.logger.Infof("LobbyInfo packet: %+v", lobby)
 		}
 		_ = lobby
 		//Call Save From Here
@@ -160,6 +194,9 @@ func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 			u.logger.Errorf("Error mapping CarDamage packet: %v", err)
 			return
 		}
+		if VerboseLogging {
+			u.logger.Infof("CarDamage packet: %+v", damage)
+		}
 		_ = damage
 		//Call Save From Here
 
@@ -173,6 +210,9 @@ func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 		if err != nil {
 			u.logger.Errorf("Error mapping SessionHistory packet: %v", err)
 			return
+		}
+		if VerboseLogging {
+			u.logger.Infof("SessionHistory packet: %+v", history)
 		}
 		_ = history
 		//Call Save From Here
@@ -188,22 +228,31 @@ func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 			u.logger.Errorf("Error mapping TyreSets packet: %v", err)
 			return
 		}
+		if VerboseLogging {
+			u.logger.Infof("TyreSets packet: %+v", tyreSets)
+		}
 		_ = tyreSets
 		//Call Save From Here
 
 	case 13:
-		fmt.Println("Motion Ex") //Ignore (No Rig stuff needed here)
+		if VerboseLogging {
+			u.logger.Infof("Motion Ex packet received (ignored, no rig support needed)")
+		}
 
 	case 14:
-		fmt.Println("Time Trial") //Ignore
+		if VerboseLogging {
+			u.logger.Infof("Time Trial packet received (ignored)")
+		}
 
 	case 15:
-		fmt.Println("Lap Positions")
 		// TODO: PacketLapPositionsData has no mapper yet.
-		_, err := parsers.ParsePacket[parsers.PacketLapPositionsData](payload)
+		data, err := parsers.ParsePacket[parsers.PacketLapPositionsData](payload)
 		if err != nil {
 			u.logger.Errorf("Error parsing LapPositions packet: %v", err)
 			return
+		}
+		if VerboseLogging {
+			u.logger.Infof("LapPositions packet (raw, no mapper yet): %+v", data)
 		}
 
 	default:
