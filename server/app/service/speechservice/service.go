@@ -3,13 +3,9 @@ package speechservice
 import (
 	"context"
 	"dubmer-bono/app/service/internal/audio"
-	"dubmer-bono/app/service/internal/stt"
-	"dubmer-bono/app/service/internal/tts"
 )
 
 type Service struct {
-	stt stt.STT
-	tts tts.TTS
 }
 
 func StartListner(ctx context.Context) {

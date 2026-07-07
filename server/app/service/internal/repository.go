@@ -1,54 +1,60 @@
 package internal
 
 import (
-	"context"
-	"dubmer-bono/app/service/internal/clickhouse"
-	"dubmer-bono/app/service/internal/postgresql"
-	"dubmer-bono/app/service/internal/qdrant"
-	rdb "dubmer-bono/app/service/internal/redis"
-
-	"github.com/ClickHouse/clickhouse-go/v2/lib/driver"
-	"github.com/jackc/pgx/v5/pgxpool"
-	"google.golang.org/grpc"
-
-	pb "github.com/qdrant/go-client/qdrant"
-	"github.com/redis/go-redis/v9"
+	"dubmer-bono/app/service/internal/badger"
+	"dubmer-bono/app/service/internal/duckdb"
+	"dubmer-bono/app/service/internal/sqlite"
+	"fmt"
+	"path/filepath"
 )
 
 type Repository struct {
-	db           *pgxpool.Pool
-	redis        *redis.Client
-	chdb         driver.Conn
-	qdrantClient pb.CollectionsClient
-	qdrantConn   *grpc.ClientConn
+	Cache *badger.Badger
+	DB    *sqlite.SQLite
+	OLAP  *duckdb.DuckDB
 }
 
-func NewRepository(ctx context.Context) (*Repository, error) {
-	db, err := postgresql.NewPostgresPool(ctx)
+func NewRepository(root string) (*Repository, error) {
+	cache, err := badger.NewBadger(filepath.Join(root, "badger.db"))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("init badger: %w", err)
 	}
 
-	rdb, err := rdb.NewRedisClient(ctx)
+	db, err := sqlite.NewSQLite(filepath.Join(root, "sqlite.db"))
 	if err != nil {
-		return nil, err
+		cache.Close()
+		return nil, fmt.Errorf("init sqlite: %w", err)
 	}
 
-	chdb, err := clickhouse.NewClickHouseConn(ctx)
+	olap, err := duckdb.NewDuckDB(filepath.Join(root, "duck.db"))
 	if err != nil {
-		return nil, err
-	}
-
-	qdrantClient, qdrantConn, err := qdrant.NewQdrantClient(ctx)
-	if err != nil {
-		return nil, err
+		cache.Close()
+		db.Close()
+		return nil, fmt.Errorf("init duckdb: %w", err)
 	}
 
 	return &Repository{
-		db:           db,
-		redis:        rdb,
-		chdb:         chdb,
-		qdrantClient: qdrantClient,
-		qdrantConn:   qdrantConn,
+		Cache: cache,
+		DB:    db,
+		OLAP:  olap,
 	}, nil
+}
+
+func (r *Repository) Close() error {
+	var errs []error
+
+	if err := r.Cache.Close(); err != nil {
+		errs = append(errs, fmt.Errorf("close badger: %w", err))
+	}
+	if err := r.DB.Close(); err != nil {
+		errs = append(errs, fmt.Errorf("close sqlite: %w", err))
+	}
+	if err := r.OLAP.Close(); err != nil {
+		errs = append(errs, fmt.Errorf("close duckdb: %w", err))
+	}
+
+	if len(errs) > 0 {
+		return fmt.Errorf("repository close errors: %v", errs)
+	}
+	return nil
 }
