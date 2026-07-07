@@ -1,5 +1,9 @@
 package telentity
 
+import (
+	"errors"
+)
+
 /*
 This is a list of participants in the race. If the vehicle is controlled by AI, then the name will be the
 driver name. If this is a multiplayer game, the names will be the Steam Id on PC, or the LAN name if
@@ -36,4 +40,14 @@ type PacketParticipantsData struct {
 	Header        UDPHeader
 	NumActiveCars uint8 // Number of active cars - should match number of cars on HUD
 	Participants  [22]ParticipantData
+}
+
+func (p *PacketParticipantsData) Me() (ParticipantData, int, error) {
+	idx := int(p.Header.PlayerCarIndex)
+
+	if idx >= len(p.Participants) || idx >= int(p.NumActiveCars) {
+		return ParticipantData{}, -1, errors.New("telentity: invalid player car index")
+	}
+
+	return p.Participants[idx], idx, nil
 }

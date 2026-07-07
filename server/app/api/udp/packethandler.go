@@ -14,8 +14,12 @@ var VerboseLogging = false
 
 func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 	header, err := parsers.ParseHeader(payload)
+
 	if err != nil {
 		u.logger.Errorf("Error Parsing Header %v", err)
+	}
+	if u.throttle.Allow() {
+		u.service.IngestHeader(header)
 	}
 
 	switch header.PacketID {
@@ -33,8 +37,7 @@ func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 		if VerboseLogging {
 			u.logger.Infof("Motion packet: %+v", motion)
 		}
-		_ = motion
-		//Call Save From Here
+		u.service.IngestMotionPacket(motion)
 
 	case 1:
 		data, err := parsers.ParsePacket[parsers.PacketSessionData](payload)
@@ -50,7 +53,7 @@ func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 		if VerboseLogging {
 			u.logger.Infof("Session packet: %+v", session)
 		}
-		_ = session
+		u.service.IngestSessionPacket(session)
 		//Call Save From Here
 
 	case 2:
@@ -67,8 +70,7 @@ func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 		if VerboseLogging {
 			u.logger.Infof("LapData packet: %+v", lapData)
 		}
-		_ = lapData
-		//Call Save From Here
+		u.service.IngestLapPacket(lapData)
 
 	case 3:
 		data, err := parsers.ParseEventPacket(payload)
@@ -84,8 +86,8 @@ func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 		if VerboseLogging {
 			u.logger.Infof("Event packet: %+v", event)
 		}
-		_ = event
-		//Call Save From Here
+
+		u.service.IngestEventPacket(event)
 
 	case 4:
 		data, err := parsers.ParsePacket[parsers.PacketParticipantsData](payload)
@@ -101,8 +103,8 @@ func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 		if VerboseLogging {
 			u.logger.Infof("Participants packet: %+v", participants)
 		}
-		_ = participants
-		//Call Save From Here
+
+		u.service.IngestParticipantPacket(participants)
 
 	case 5:
 		data, err := parsers.ParsePacket[parsers.PacketCarSetupData](payload)
@@ -118,8 +120,8 @@ func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 		if VerboseLogging {
 			u.logger.Infof("CarSetup packet: %+v", setup)
 		}
-		_ = setup
-		//Call Save From Here
+
+		u.service.IngestCarSetupPacket(setup)
 
 	case 6:
 		data, err := parsers.ParsePacket[parsers.PacketCarTelemetryData](payload)
@@ -135,8 +137,8 @@ func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 		if VerboseLogging {
 			u.logger.Infof("CarTelemetry packet: %+v", telemetry)
 		}
-		_ = telemetry
-		//Call Save From Here
+
+		u.service.IngestTelemetryPacket(telemetry)
 
 	case 7:
 		data, err := parsers.ParsePacket[parsers.PacketCarStatusData](payload)
@@ -152,8 +154,8 @@ func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 		if VerboseLogging {
 			u.logger.Infof("CarStatus packet: %+v", status)
 		}
-		_ = status
-		//Call Save From Here
+
+		u.service.IngestCarStatusPacket(status)
 
 	case 8:
 		// TODO: PacketFinalClassificationData has no mapper yet.
@@ -180,8 +182,8 @@ func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 		if VerboseLogging {
 			u.logger.Infof("LobbyInfo packet: %+v", lobby)
 		}
-		_ = lobby
-		//Call Save From Here
+
+		u.service.IngestLobbyInfoPacket(lobby)
 
 	case 10:
 		data, err := parsers.ParsePacket[parsers.PacketCarDamageData](payload)
@@ -197,8 +199,8 @@ func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 		if VerboseLogging {
 			u.logger.Infof("CarDamage packet: %+v", damage)
 		}
-		_ = damage
-		//Call Save From Here
+
+		u.service.IngestCarDamagePacket(damage)
 
 	case 11:
 		data, err := parsers.ParsePacket[parsers.PacketSessionHistoryData](payload)
@@ -214,8 +216,8 @@ func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 		if VerboseLogging {
 			u.logger.Infof("SessionHistory packet: %+v", history)
 		}
-		_ = history
-		//Call Save From Here
+
+		u.service.IngestSessionHistoryPacket(history)
 
 	case 12:
 		data, err := parsers.ParsePacket[parsers.PacketTyreSetsData](payload)
@@ -231,8 +233,8 @@ func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 		if VerboseLogging {
 			u.logger.Infof("TyreSets packet: %+v", tyreSets)
 		}
-		_ = tyreSets
-		//Call Save From Here
+
+		u.service.IngestTyreSetPacket(tyreSets)
 
 	case 13:
 		if VerboseLogging {

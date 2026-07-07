@@ -3,11 +3,18 @@ package entity
 type NameSpace string
 
 const (
-	SESSION NameSpace = "session"
+	GAMESESSION NameSpace = "gamesession"
+	PARTICIPANT NameSpace = "participant"
+	LAPDATA     NameSpace = "lapdata"
 )
 
 type Key string
 
 const (
-	PIT_REJOIN_POSITION Key = "pitrejoinposition"
+	PLAYERINDEX Key = "playerindex"
+	SESSIONID   Key = "sessionid"
+	MYCARID     Key = "mycarid"
+	MYDRIVERID  Key = "mydriverid"
+	MYTEAMID    Key = "myteamid"
+	MYRACEINDEX Key = "myraceindex"
 )

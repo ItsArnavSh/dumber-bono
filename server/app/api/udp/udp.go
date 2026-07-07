@@ -4,17 +4,20 @@ import (
 	"context"
 	"dubmer-bono/app/types"
 	"dubmer-bono/app/types/entity/consts"
+	"dubmer-bono/app/utility"
 	"fmt"
 	"net"
+	"time"
 
 	"go.uber.org/zap"
 )
 
 type UDPServer struct {
-	port    uint16
-	logger  *zap.SugaredLogger
-	conn    net.PacketConn
-	service types.Ingestion
+	throttle *utility.Throttler
+	port     uint16
+	logger   *zap.SugaredLogger
+	conn     net.PacketConn
+	service  types.Ingestion
 }
 
 func (u *UDPServer) listenUDP(ctx context.Context) error {
@@ -32,9 +35,10 @@ func (u *UDPServer) listenUDP(ctx context.Context) error {
 
 func NewUDPServer(ctx context.Context, logger *zap.SugaredLogger, port uint16, service types.Ingestion) error {
 	server := UDPServer{
-		port:    port,
-		logger:  logger,
-		service: service,
+		port:     port,
+		logger:   logger,
+		service:  service,
+		throttle: &utility.Throttler{Interval: time.Second},
 	}
 	pc, err := net.ListenPacket("udp", fmt.Sprintf(":%d", server.port))
 	if err != nil {

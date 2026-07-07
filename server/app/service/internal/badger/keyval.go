@@ -1,14 +1,13 @@
 package badger
 
 import (
-	"context"
 	"encoding/json"
 	"strings"
 
 	"github.com/dgraph-io/badger/v4"
 )
 
-func (b *Badger) Set(ctx context.Context, namespace string, key string, value any) error {
+func (b *Badger) Set(namespace string, key string, value any) error {
 	data, err := json.Marshal(value)
 	if err != nil {
 		return err
@@ -19,7 +18,7 @@ func (b *Badger) Set(ctx context.Context, namespace string, key string, value an
 	})
 }
 
-func (b *Badger) Get(ctx context.Context, namespace, key string, dest any) error {
+func (b *Badger) Get(namespace, key string, dest any) error {
 	fullKey := namespace + ":" + key
 	return b.conn.View(func(txn *badger.Txn) error {
 		item, err := txn.Get([]byte(fullKey))
@@ -31,7 +30,7 @@ func (b *Badger) Get(ctx context.Context, namespace, key string, dest any) error
 		})
 	})
 }
-func (b *Badger) List(ctx context.Context, namespace string) (map[string][]byte, error) {
+func (b *Badger) List(namespace string) (map[string][]byte, error) {
 	prefix := []byte(namespace + ":")
 	result := make(map[string][]byte)
 
@@ -57,7 +56,7 @@ func (b *Badger) List(ctx context.Context, namespace string) (map[string][]byte,
 
 	return result, err
 }
-func (b *Badger) BulkSet(ctx context.Context, namespace string, kv map[string]any) error {
+func (b *Badger) BulkSet(namespace string, kv map[string]any) error {
 	return b.conn.Update(func(txn *badger.Txn) error {
 		for key, value := range kv {
 			data, err := json.Marshal(value)

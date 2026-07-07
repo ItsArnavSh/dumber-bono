@@ -13,12 +13,6 @@ Version: 1
 // for a given event. Check EventStringCode (or use the EventCodeDescriptions
 // map below) before deciding which field on PacketEventData to read.
 
-// EventDataDetails is a C union in the source spec - Go has no union type,
-// so each variant becomes its own struct below. Only the struct matching
-// the current EventStringCode is valid to read; the rest are meaningless
-// for a given event. Check EventStringCode (or use the EventCodeDescriptions
-// map below) before deciding which field on PacketEventData to read.
-
 type FastestLap struct {
 	VehicleIdx uint8   // Vehicle index of car achieving fastest lap
 	LapTime    float32 // Lap time in seconds
