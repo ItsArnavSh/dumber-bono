@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"dubmer-bono/app/api/udp"
+	ingestion "dubmer-bono/app/service/ingestionservice"
 
 	"go.uber.org/zap"
 )
@@ -10,16 +11,12 @@ import (
 func main() {
 	ctx := context.Background()
 	logger := getLogger()
-	err := udp.NewUDPServer(ctx, logger, 4345)
+	service, err := ingestion.NewService("/tmp")
+	err = udp.NewUDPServer(ctx, logger, 4345, service)
 	if err != nil {
 		logger.Errorf("Error Setting UDP: %w", err)
 		return
 	}
-	// err = RunClickHouseMigrations("clickhouse://admin:changeme@localhost:9000/telemetry")
-	// if err != nil {
-	// 	logger.Errorf("Error Setting UDP: %w", err)
-	// 	return
-	// }
 	//speechservice.StartListner(ctx)
 	select {}
 }

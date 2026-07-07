@@ -10,7 +10,7 @@ import (
 // VerboseLogging toggles full struct dumps for every parsed/mapped packet.
 // Set to true to log the packet type and all its contents; false to stay quiet
 // except for errors.
-var VerboseLogging = true
+var VerboseLogging = false
 
 func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 	header, err := parsers.ParseHeader(payload)
