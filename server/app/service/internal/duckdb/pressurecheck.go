@@ -8,7 +8,7 @@ import (
 
 func (d *DuckDB) GetPressureFactors(ctx context.Context, sessionID uint64, carNo uint8) (entity.PilotPressurePhysicalFactors, error) {
 	const query = `
-		SELECT g_force_lat, steer, brake
+		SELECT g_force_lat,g_force_lon, steer, brake
 		FROM telemetry_frames
 		WHERE session_id = CAST(? AS UBIGINT) AND car_no = ?
 		ORDER BY frame_time DESC
@@ -18,7 +18,7 @@ func (d *DuckDB) GetPressureFactors(ctx context.Context, sessionID uint64, carNo
 	var pf entity.PilotPressurePhysicalFactors
 	err := d.conn.QueryRowContext(ctx, query,
 		strconv.FormatUint(sessionID, 10), carNo,
-	).Scan(&pf.GForceLat, &pf.Steer, &pf.Brake)
+	).Scan(&pf.GForceLat, &pf.GFroceLon, &pf.Steer, &pf.Brake)
 	if err != nil {
 		return entity.PilotPressurePhysicalFactors{}, err
 	}

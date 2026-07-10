@@ -65,3 +65,14 @@ All the menu settings specified here, and other post event stuff
 - DRS status and activation distance
 - Fuel Mix and fuel info
 - ERS Details
+
+
+### Final Classification
+
+- Mainly so bot has a confirmed way to mark end of session
+### Car Damage
+- Again all the parameters are needed
+### Tyre Set 
+To be merged with the other one
+
+### Lap Position Data

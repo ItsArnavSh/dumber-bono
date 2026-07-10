@@ -5,6 +5,7 @@ import (
 	"dubmer-bono/app/service"
 	ingestion "dubmer-bono/app/service/ingestionservice"
 	monitor "dubmer-bono/app/service/monitorservice"
+	"dubmer-bono/app/service/radio"
 	"dubmer-bono/app/types"
 
 	"go.uber.org/zap"
@@ -26,5 +27,9 @@ func InitServices(ctx context.Context, path string, logger *zap.SugaredLogger, r
 	if err != nil {
 		return Services{}, err
 	}
-	return Services{ingestion: ingestion, monitor: monitor}, nil
+	radio, err := radio.NewService(ctx, logger, path, repo, monitor.GetPressure)
+	if err != nil {
+		return Services{}, err
+	}
+	return Services{ingestion: ingestion, monitor: monitor, radio: radio}, nil
 }

@@ -89,6 +89,7 @@ func (s *Service) IngestCarSetupPacket(payload telentity.PacketCarSetupData) {
 }
 func (s *Service) IngestMotionPacket(payload telentity.MotionPacket) {
 	ctx := context.Background()
+
 	s.acc.UpsertMotion(ctx, payload)
 }
 func (s *Service) IngestTelemetryPacket(payload telentity.PacketCarTelemetryData) {

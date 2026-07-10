@@ -22,6 +22,7 @@ type Ingestion interface {
 }
 
 type Monitor interface {
+	GetPressure() int
 }
 
 type Radio interface {

@@ -5,10 +5,13 @@ import (
 	"dubmer-bono/app/types/entity"
 	telentity "dubmer-bono/app/types/entity/tel-entity"
 	"dubmer-bono/app/utility"
+	"sync"
 	"time"
 )
 
 type TeleAccumulator struct {
+	mu sync.RWMutex
+
 	motion        telentity.MotionPacket
 	motion_update time.Time
 
@@ -22,45 +25,58 @@ type TeleAccumulator struct {
 }
 
 func (t *TeleAccumulator) UpsertMotion(ctx context.Context, packet telentity.MotionPacket) {
+	t.mu.Lock()
 	t.motion = packet
 	t.motion_update = time.Now()
+	t.mu.Unlock()
+
 	t.signal_func(ctx)
 }
 
 func (t *TeleAccumulator) UpsertTelemetry(ctx context.Context, packet telentity.PacketCarTelemetryData) {
+	t.mu.Lock()
 	t.tele = packet
 	t.tele_update = time.Now()
+	t.mu.Unlock()
 }
 
 func (t *TeleAccumulator) UpsertLapData(ctx context.Context, packet telentity.LapDataPacket) {
+	t.mu.Lock()
 	t.lap = packet
 	t.lap_update = time.Now()
+	t.mu.Unlock()
 }
-
 func (t *Service) SignalPush(ctx context.Context) {
+	t.acc.mu.Lock()
+
 	if t.acc.motion == (telentity.MotionPacket{}) ||
 		t.acc.tele == (telentity.PacketCarTelemetryData{}) ||
 		t.acc.lap == (telentity.LapDataPacket{}) {
-		return // haven't received all three packet types yet
+		t.acc.mu.Unlock()
+		return
 	}
 
 	avg, err := utility.CheckFramesFresh(time.Millisecond*50,
 		t.acc.motion_update, t.acc.tele_update, t.acc.lap_update)
 	if err != nil {
-		// one of the three streams drifted too far from the others, don't trust this pairing
+		t.acc.mu.Unlock()
 		return
 	}
+
+	motionSnapshot := t.acc.motion
+	teleSnapshot := t.acc.tele
+	lapSnapshot := t.acc.lap
+
+	t.acc.motion = telentity.MotionPacket{}
+	t.acc.tele = telentity.PacketCarTelemetryData{}
+	t.acc.lap = telentity.LapDataPacket{}
+
+	t.acc.mu.Unlock()
 
 	var sessionID uint64
 	if err := t.repo.Cache.Get(string(entity.GAMESESSION), string(entity.SESSIONID), &sessionID); err != nil {
 		return
 	}
-
-	// snapshot before reset
-	motionSnapshot := t.acc.motion
-	teleSnapshot := t.acc.tele
-	lapSnapshot := t.acc.lap
-
 	t.acc.motion = telentity.MotionPacket{}
 	t.acc.tele = telentity.PacketCarTelemetryData{}
 	t.acc.lap = telentity.LapDataPacket{}

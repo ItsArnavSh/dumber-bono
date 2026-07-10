@@ -14,8 +14,9 @@ import (
  */
 
 type Service struct {
-	repo   *service.Repository
-	logger *zap.SugaredLogger
+	repo            *service.Repository
+	logger          *zap.SugaredLogger
+	driver_pressure int
 }
 
 var _ types.Monitor = &Service{}
@@ -24,4 +25,8 @@ func NewService(ctx context.Context, logger *zap.SugaredLogger, root string, rep
 	serv := &Service{repo: repo, logger: logger}
 	go serv.monitorPressure(ctx)
 	return serv, nil
+}
+
+func (s *Service) GetPressure() int {
+	return s.driver_pressure
 }
