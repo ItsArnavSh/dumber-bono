@@ -9,6 +9,7 @@ import (
 func main() {
 	ctx := context.Background()
 	logger := getLogger()
+
 	server, err := api.NewServer(ctx, logger, "/tmp")
 	if err != nil {
 		log.Fatal(err)

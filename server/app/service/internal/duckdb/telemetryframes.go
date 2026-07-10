@@ -36,6 +36,7 @@ func (d *DuckDB) writeTelemetrysBatch(ctx context.Context, frames []entity.Telem
 				f.FwdX, f.FwdY, f.FwdZ,
 				f.GForceLat, f.GForceLon,
 				f.Yaw, f.Pitch, f.Roll,
+				f.CarPosition, f.DeltaToFrontMS, f.DeltaToLeaderMS, f.LapDistance,
 			); err != nil {
 				return err
 			}

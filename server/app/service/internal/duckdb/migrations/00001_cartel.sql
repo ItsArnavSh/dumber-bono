@@ -29,7 +29,12 @@ CREATE TABLE IF NOT EXISTS telemetry_frames (
 
     yaw             FLOAT,
     pitch           FLOAT,
-    roll            FLOAT
+    roll            FLOAT,
+
+    car_position       UTINYINT,
+    delta_to_front_ms  UINTEGER,
+    delta_to_leader_ms UINTEGER,
+    lap_distance       FLOAT
 );
 
 CREATE INDEX IF NOT EXISTS idx_telemetry_session_car_time

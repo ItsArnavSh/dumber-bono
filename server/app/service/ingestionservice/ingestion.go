@@ -3,7 +3,7 @@ package ingestion
 import (
 	"context"
 	"dubmer-bono/app/api/udp/parsers"
-	"dubmer-bono/app/service/internal"
+	"dubmer-bono/app/service"
 	"dubmer-bono/app/types"
 	"dubmer-bono/app/types/entity"
 	telentity "dubmer-bono/app/types/entity/tel-entity"
@@ -15,18 +15,14 @@ import (
 //The Ingestion Service Saves the Data in the relevant DBs so that the other processes can query into it
 
 type Service struct {
-	repo   *internal.Repository
+	repo   *service.Repository
 	logger *zap.SugaredLogger
 	acc    TeleAccumulator
 }
 
 var _ types.Ingestion = &Service{}
 
-func NewService(ctx context.Context, logger *zap.SugaredLogger, root string) (types.Ingestion, error) {
-	repo, err := internal.NewRepository(ctx, root)
-	if err != nil {
-		return nil, err
-	}
+func NewService(ctx context.Context, logger *zap.SugaredLogger, root string, repo *service.Repository) (types.Ingestion, error) {
 	serv := &Service{repo: repo, logger: logger}
 	serv.acc = TeleAccumulator{
 		signal_func: serv.SignalPush,
@@ -59,6 +55,8 @@ func (s *Service) IngestHeader(payload *parsers.PacketHeader) error {
 
 func (s *Service) IngestSessionPacket(payload telentity.PacketSessionData) {}
 func (s *Service) IngestLapPacket(payload telentity.LapDataPacket) {
+	ctx := context.Background()
+	s.acc.UpsertLapData(ctx, payload)
 	kv := make(map[string]any, len(payload.LapData))
 
 	for i := range payload.LapData {

@@ -5,25 +5,30 @@ import (
 	"time"
 )
 
-// CheckFrameGap takes two event timestamps (in either order) and the
-// expected duration between them. It returns the midpoint time between
-// the two events, and an error if the gap deviates too far from expected.
-func CheckFrameGap(event1, event2 time.Time, expected time.Duration) (avg time.Time, err error) {
-	gap := event2.Sub(event1)
-	if gap < 0 {
-		gap = -gap
+// CheckFramesFresh takes any number of event timestamps and the expected
+// max spread between them. It returns the midpoint time across all events,
+// and an error if the spread between earliest and latest exceeds tolerance.
+func CheckFramesFresh(expected time.Duration, times ...time.Time) (avg time.Time, err error) {
+	if len(times) == 0 {
+		return time.Time{}, fmt.Errorf("no timestamps provided")
 	}
 
-	// midpoint = earlier time + half the gap
-	earlier := event1
-	if event2.Before(event1) {
-		earlier = event2
+	earliest, latest := times[0], times[0]
+	for _, t := range times[1:] {
+		if t.Before(earliest) {
+			earliest = t
+		}
+		if t.After(latest) {
+			latest = t
+		}
 	}
-	avg = earlier.Add(gap / 2)
 
-	const tolerance = 1.5 // allow up to 1.5x expected before flagging
-	if gap > time.Duration(float64(expected)*tolerance) {
-		return avg, fmt.Errorf("gap %v exceeds expected %v", gap, expected)
+	spread := latest.Sub(earliest)
+	avg = earliest.Add(spread / 2)
+
+	const tolerance = 1.5
+	if spread > time.Duration(float64(expected)*tolerance) {
+		return avg, fmt.Errorf("spread %v exceeds expected %v", spread, expected)
 	}
 	return avg, nil
 }

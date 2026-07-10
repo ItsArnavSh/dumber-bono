@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"dubmer-bono/app/api/udp"
+	"dubmer-bono/app/service"
 
 	"go.uber.org/zap"
 )
@@ -13,7 +14,12 @@ type Server struct {
 }
 
 func NewServer(ctx context.Context, logger *zap.SugaredLogger, path string) (Server, error) {
-	services, err := InitServices(ctx, path, logger)
+	repo, err := service.NewRepository(ctx, path)
+	if err != nil {
+		logger.Errorf("error initializing server: %w", err)
+		return Server{}, err
+	}
+	services, err := InitServices(ctx, path, logger, repo)
 	if err != nil {
 		logger.Errorf("error initializing services: %w", err)
 		return Server{}, err

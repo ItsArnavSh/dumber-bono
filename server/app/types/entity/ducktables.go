@@ -23,4 +23,9 @@ type TelemetryFrame struct {
 	GForceLat, GForceLon float32
 
 	Yaw, Pitch, Roll float32
+
+	CarPosition     uint8
+	DeltaToFrontMS  uint32
+	DeltaToLeaderMS uint32
+	LapDistance     float32
 }
