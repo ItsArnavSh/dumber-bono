@@ -25,6 +25,8 @@ func NewDuckDB(ctx context.Context, path string) (*DuckDB, error) {
 	}
 
 	ddb := &DuckDB{conn: conn, batch: BatchedFrames{}}
+	err = ddb.ApplyMigrations(ctx)
+	fmt.Println("Error: ", err)
 	go ddb.BatchProcess(ctx)
 	return ddb, nil
 }

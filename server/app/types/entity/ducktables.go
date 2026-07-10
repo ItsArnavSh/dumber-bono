@@ -3,7 +3,7 @@ package entity
 import "time"
 
 type TelemetryFrame struct {
-	SessionID uint32
+	SessionID uint64
 	CarNo     uint8
 	FrameTime time.Time
 

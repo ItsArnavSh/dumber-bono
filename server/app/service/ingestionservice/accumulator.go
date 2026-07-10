@@ -26,35 +26,42 @@ func (t *TeleAccumulator) UpsertTelemetry(ctx context.Context, packet telentity.
 	t.tele = packet
 	t.tele_update = time.Now()
 }
-
 func (t *Service) SignalPush(ctx context.Context) {
 	if t.acc.motion == (telentity.MotionPacket{}) || t.acc.tele == (telentity.PacketCarTelemetryData{}) {
-		return // haven't received both packet types yet
+		t.logger.Debug("SignalPush: waiting on motion or telemetry packet, skipping")
+		return
 	}
 
 	avg, err := utility.CheckFrameGap(t.acc.motion_update, t.acc.tele_update, time.Millisecond*50)
 	if err != nil {
-		// motion and telemetry timestamps drifted too far apart, don't trust this pairing
+		t.logger.Debugf("SignalPush: frame gap too large, dropping pair: %v", err)
 		return
 	}
 
-	//Reset
+	var sessionID uint64
+	if err := t.repo.Cache.Get(string(entity.GAMESESSION), string(entity.SESSIONID), &sessionID); err != nil {
+		t.logger.Debugf("SignalPush: session id not found in cache, skipping: %v", err)
+		return
+	}
+
+	// snapshot before reset, since reading t.acc after zeroing it would give you empty data
+	motionSnapshot := t.acc.motion
+	teleSnapshot := t.acc.tele
+
 	t.acc.motion = telentity.MotionPacket{}
 	t.acc.tele = telentity.PacketCarTelemetryData{}
-	var sessionID uint32
-	if err := t.repo.Cache.Get(string(entity.SESSIONID), string(entity.SESSIONID), &sessionID); err != nil {
-		return
-	}
+
+	t.logger.Debugf("SignalPush: writing 20 car frames, session=%d frameTime=%s (UTC)",
+		sessionID, avg.UTC().Format(time.RFC3339Nano))
 
 	for carIndex := range 20 {
-		motion := t.acc.motion.Cars[carIndex]
-		tele := t.acc.tele.CarTelemetryData[carIndex]
+		motion := motionSnapshot.Cars[carIndex]
+		tele := teleSnapshot.CarTelemetryData[carIndex]
 
 		t.repo.OLAP.InsertFrame(ctx, entity.TelemetryFrame{
 			SessionID: sessionID,
 			CarNo:     uint8(carIndex),
 			FrameTime: avg,
-
 			Speed:     float32(tele.Speed),
 			Throttle:  tele.Throttle,
 			Steer:     tele.Steer,
@@ -63,25 +70,20 @@ func (t *Service) SignalPush(ctx context.Context) {
 			Gear:      tele.Gear,
 			EngineRPM: tele.EngineRPM,
 			DRS:       tele.DRS,
-
-			PosX: motion.WorldPosition.X,
-			PosY: motion.WorldPosition.Y,
-			PosZ: motion.WorldPosition.Z,
-
-			VelX: motion.WorldVelocity.X,
-			VelY: motion.WorldVelocity.Y,
-			VelZ: motion.WorldVelocity.Z,
-
-			FwdX: float32(motion.WorldForwardDir.X),
-			FwdY: float32(motion.WorldForwardDir.Y),
-			FwdZ: float32(motion.WorldForwardDir.Z),
-
+			PosX:      motion.WorldPosition.X,
+			PosY:      motion.WorldPosition.Y,
+			PosZ:      motion.WorldPosition.Z,
+			VelX:      motion.WorldVelocity.X,
+			VelY:      motion.WorldVelocity.Y,
+			VelZ:      motion.WorldVelocity.Z,
+			FwdX:      float32(motion.WorldForwardDir.X),
+			FwdY:      float32(motion.WorldForwardDir.Y),
+			FwdZ:      float32(motion.WorldForwardDir.Z),
 			GForceLat: motion.GForce.Lateral,
 			GForceLon: motion.GForce.Longitudinal,
-
-			Yaw:   motion.Orientation.Yaw,
-			Pitch: motion.Orientation.Pitch,
-			Roll:  motion.Orientation.Roll,
+			Yaw:       motion.Orientation.Yaw,
+			Pitch:     motion.Orientation.Pitch,
+			Roll:      motion.Orientation.Roll,
 		})
 	}
 }

@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS telemetry_frames (
-    session_id      UINTEGER,
+    session_id      UBIGINT,
     car_no          UTINYINT,
     frame_time      TIMESTAMP,
 

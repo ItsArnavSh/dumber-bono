@@ -6,7 +6,7 @@ import (
 )
 
 type Ingestion interface {
-	IngestHeader(payload *parsers.PacketHeader)
+	IngestHeader(payload *parsers.PacketHeader) error
 	IngestMotionPacket(payload telentity.MotionPacket)
 	IngestSessionPacket(payload telentity.PacketSessionData)
 	IngestLapPacket(payload telentity.LapDataPacket)
@@ -19,4 +19,13 @@ type Ingestion interface {
 	IngestCarDamagePacket(payload telentity.PacketCarDamageData)
 	IngestSessionHistoryPacket(payload telentity.SessionHistoryPacket)
 	IngestTyreSetPacket(payload telentity.TyreSetPacket)
+}
+
+type Monitor interface {
+}
+
+type Radio interface {
+}
+
+type Agent interface {
 }

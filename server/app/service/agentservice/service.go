@@ -1,4 +1,4 @@
-package speechservice
+package agent
 
 import (
 	"context"

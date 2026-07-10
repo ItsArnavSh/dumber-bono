@@ -33,7 +33,7 @@ func (u *UDPServer) listenUDP(ctx context.Context) error {
 	}
 }
 
-func NewUDPServer(ctx context.Context, logger *zap.SugaredLogger, port uint16, service types.Ingestion) error {
+func ListenUDP(ctx context.Context, logger *zap.SugaredLogger, port uint16, service types.Ingestion) error {
 	server := UDPServer{
 		port:     port,
 		logger:   logger,

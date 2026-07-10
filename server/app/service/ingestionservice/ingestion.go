@@ -16,40 +16,47 @@ import (
 
 type Service struct {
 	repo   *internal.Repository
-	logger *zap.Logger
+	logger *zap.SugaredLogger
 	acc    TeleAccumulator
 }
 
 var _ types.Ingestion = &Service{}
 
-func NewService(ctx context.Context, root string) (types.Ingestion, error) {
+func NewService(ctx context.Context, logger *zap.SugaredLogger, root string) (types.Ingestion, error) {
 	repo, err := internal.NewRepository(ctx, root)
 	if err != nil {
 		return nil, err
 	}
-	serv := &Service{repo: repo}
+	serv := &Service{repo: repo, logger: logger}
 	serv.acc = TeleAccumulator{
 		signal_func: serv.SignalPush,
 	}
 	return serv, nil
 }
 
-func (s *Service) IngestHeader(payload *parsers.PacketHeader) {
-	var session_id uint64
-	err := s.repo.Cache.Get(string(entity.GAMESESSION), string(entity.SESSIONID), &session_id)
-	s.logger.Error(err.Error())
-	if payload.SessionUID != session_id {
-		//TODO: Nuke Current Session
+func (s *Service) IngestHeader(payload *parsers.PacketHeader) error {
+	var sessionID uint64
+	err := s.repo.Cache.Get(string(entity.GAMESESSION), string(entity.SESSIONID), &sessionID)
+	if err != nil {
+		s.logger.Warnf("no cached session found: %v", err)
+		// no session cached yet, treat this packet's session as new
+		sessionID = 0
 	}
-	err = s.repo.Cache.Set(string(entity.GAMESESSION), string(entity.SESSIONID), payload.SessionUID)
-	s.logger.Error(err.Error())
-	err = s.repo.Cache.Set(string(entity.GAMESESSION), string(entity.PLAYERINDEX), payload.PlayerCarIndex)
-	s.logger.Error(err.Error())
-	//TODO: Add A SigKill Functionality
+	if payload.SessionUID != sessionID {
+		// TODO: Nuke Current Session
+	}
+	if err := s.repo.Cache.Set(string(entity.GAMESESSION), string(entity.SESSIONID), payload.SessionUID); err != nil {
+		s.logger.Errorf("failed to set session id in cache: %v", err)
+		return err
+	}
+	if err := s.repo.Cache.Set(string(entity.GAMESESSION), string(entity.PLAYERINDEX), payload.PlayerCarIndex); err != nil {
+		s.logger.Errorf("failed to set player index in cache: %v", err)
+		return err
+	}
+
+	return nil
 }
-func (s *Service) IngestMotionPacket(payload telentity.MotionPacket) {
-	//Ignoring For Now, Maybe could be useful in the future
-}
+
 func (s *Service) IngestSessionPacket(payload telentity.PacketSessionData) {}
 func (s *Service) IngestLapPacket(payload telentity.LapDataPacket) {
 	kv := make(map[string]any, len(payload.LapData))
@@ -82,9 +89,16 @@ func (s *Service) IngestParticipantPacket(payload telentity.PacketParticipantsDa
 func (s *Service) IngestCarSetupPacket(payload telentity.PacketCarSetupData) {
 
 }
-func (s *Service) IngestTelemetryPacket(payload telentity.PacketCarTelemetryData) {}
-func (s *Service) IngestCarStatusPacket(payload telentity.PacketCarStatusData)    {}
-func (s *Service) IngestLobbyInfoPacket(payload telentity.PacketLobbyInfoData)    {}
+func (s *Service) IngestMotionPacket(payload telentity.MotionPacket) {
+	ctx := context.Background()
+	s.acc.UpsertMotion(ctx, payload)
+}
+func (s *Service) IngestTelemetryPacket(payload telentity.PacketCarTelemetryData) {
+	ctx := context.Background()
+	s.acc.UpsertTelemetry(ctx, payload)
+}
+func (s *Service) IngestCarStatusPacket(payload telentity.PacketCarStatusData) {}
+func (s *Service) IngestLobbyInfoPacket(payload telentity.PacketLobbyInfoData) {}
 func (s *Service) IngestCarDamagePacket(payload telentity.PacketCarDamageData) {
 	//We will save this data for
 }

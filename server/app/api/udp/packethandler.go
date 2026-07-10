@@ -19,7 +19,9 @@ func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 		u.logger.Errorf("Error Parsing Header %v", err)
 	}
 	if u.throttle.Allow() {
-		u.service.IngestHeader(header)
+		if header != nil {
+			u.service.IngestHeader(header)
+		}
 	}
 
 	switch header.PacketID {
@@ -75,7 +77,7 @@ func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 	case 3:
 		data, err := parsers.ParseEventPacket(payload)
 		if err != nil {
-			u.logger.Errorf("Error parsing Event packet: %v", err)
+			//u.logger.Errorf("Error parsing Event packet: %v", err)
 			return
 		}
 		event, err := mappers.MapToEventData(data)

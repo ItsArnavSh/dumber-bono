@@ -1,4 +1,4 @@
 package radio
 
-type Radio struct {
+type Service struct {
 }
