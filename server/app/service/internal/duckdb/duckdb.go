@@ -1,6 +1,7 @@
 package duckdb
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 
@@ -8,10 +9,11 @@ import (
 )
 
 type DuckDB struct {
-	conn *sql.DB
+	conn  *sql.DB
+	batch BatchedFrames
 }
 
-func NewDuckDB(path string) (*DuckDB, error) {
+func NewDuckDB(ctx context.Context, path string) (*DuckDB, error) {
 	// path can be a file (e.g. "bonobo.duckdb") or ":memory:" for in-memory only
 	conn, err := sql.Open("duckdb", path)
 	if err != nil {
@@ -22,7 +24,9 @@ func NewDuckDB(path string) (*DuckDB, error) {
 		return nil, fmt.Errorf("ping duckdb: %w", err)
 	}
 
-	return &DuckDB{conn: conn}, nil
+	ddb := &DuckDB{conn: conn, batch: BatchedFrames{}}
+	go ddb.BatchProcess(ctx)
+	return ddb, nil
 }
 
 func (d *DuckDB) Close() error {

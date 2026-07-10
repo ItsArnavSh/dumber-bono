@@ -1,6 +1,7 @@
 package ingestion
 
 import (
+	"context"
 	"dubmer-bono/app/api/udp/parsers"
 	"dubmer-bono/app/service/internal"
 	"dubmer-bono/app/types"
@@ -16,13 +17,21 @@ import (
 type Service struct {
 	repo   *internal.Repository
 	logger *zap.Logger
+	acc    TeleAccumulator
 }
 
 var _ types.Ingestion = &Service{}
 
-func NewService(root string) (types.Ingestion, error) {
-	repo, err := internal.NewRepository(root)
-	return &Service{repo: repo}, err
+func NewService(ctx context.Context, root string) (types.Ingestion, error) {
+	repo, err := internal.NewRepository(ctx, root)
+	if err != nil {
+		return nil, err
+	}
+	serv := &Service{repo: repo}
+	serv.acc = TeleAccumulator{
+		signal_func: serv.SignalPush,
+	}
+	return serv, nil
 }
 
 func (s *Service) IngestHeader(payload *parsers.PacketHeader) {
@@ -70,10 +79,14 @@ func (s *Service) IngestParticipantPacket(payload telentity.PacketParticipantsDa
 		s.repo.Cache.Set(string(entity.PARTICIPANT), string(i), payload.Participants[i])
 	}
 }
-func (s *Service) IngestCarSetupPacket(payload telentity.PacketCarSetupData)         {}
-func (s *Service) IngestTelemetryPacket(payload telentity.PacketCarTelemetryData)    {}
-func (s *Service) IngestCarStatusPacket(payload telentity.PacketCarStatusData)       {}
-func (s *Service) IngestLobbyInfoPacket(payload telentity.PacketLobbyInfoData)       {}
-func (s *Service) IngestCarDamagePacket(payload telentity.PacketCarDamageData)       {}
+func (s *Service) IngestCarSetupPacket(payload telentity.PacketCarSetupData) {
+
+}
+func (s *Service) IngestTelemetryPacket(payload telentity.PacketCarTelemetryData) {}
+func (s *Service) IngestCarStatusPacket(payload telentity.PacketCarStatusData)    {}
+func (s *Service) IngestLobbyInfoPacket(payload telentity.PacketLobbyInfoData)    {}
+func (s *Service) IngestCarDamagePacket(payload telentity.PacketCarDamageData) {
+	//We will save this data for
+}
 func (s *Service) IngestSessionHistoryPacket(payload telentity.SessionHistoryPacket) {}
 func (s *Service) IngestTyreSetPacket(payload telentity.TyreSetPacket)               {}
