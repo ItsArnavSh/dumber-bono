@@ -2,7 +2,6 @@ package audio
 
 import (
 	"context"
-	"fmt"
 	"strings"
 )
 
@@ -20,7 +19,6 @@ func (a *Audio) TTS(ctx context.Context) {
 		}
 
 		// TODO: Send text to Piper
-		fmt.Println("SEND:", text)
 		sentencechan <- text
 	}
 
