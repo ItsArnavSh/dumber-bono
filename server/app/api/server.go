@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"dubmer-bono/app/api/udp"
 	"dubmer-bono/app/service"
 
 	"go.uber.org/zap"
@@ -25,11 +24,11 @@ func NewServer(ctx context.Context, logger *zap.SugaredLogger, path string) (Ser
 		return Server{}, err
 	}
 
-	err = udp.ListenUDP(ctx, logger, 4345, services.ingestion)
-	if err != nil {
-		logger.Errorf("error setting up UDP server: %w", err)
-		return Server{}, err
-	}
+	// err = udp.ListenUDP(ctx, logger, 4345, services.ingestion)
+	// if err != nil {
+	// 	logger.Errorf("error setting up UDP server: %w", err)
+	// 	return Server{}, err
+	// }
 
 	return Server{
 		logger:   logger,

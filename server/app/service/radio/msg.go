@@ -1,21 +1,38 @@
 package radio
 
-func (s *Service) GetMessageByMinPriority(allowed_priority int) (string, bool) {
-	priority := 5
+import (
+	"dubmer-bono/app/types/entity"
+	"dubmer-bono/app/utility"
+	"fmt"
+)
+
+const maxPriority = 5
+
+func (s *Service) GetMessageByMinPriority() (string, bool) {
+	priority := maxPriority
+	allowed_priority := s.getDriverPressure()
 	for priority >= allowed_priority {
-		vc := s.prio_sorted_vc[priority]
-		rad_msg, ok := vc.Pop()
+		vc, ok := s.prio_sorted_vc[priority]
 		if ok {
-			return rad_msg.Message, true
+			rad_msg, ok := vc.Pop()
+			if ok {
+				return rad_msg.Message, true
+			}
 		}
 		priority--
 	}
 	return "", false
 }
 
-func (s *Service) AddMessage() {
+func (s *Service) MessageChanListner() {
 	for msg := range s.msg_chan {
-		queue := s.prio_sorted_vc[msg.Priority]
+		fmt.Println("received message")
+		queue, ok := s.prio_sorted_vc[msg.Priority]
+		if !ok {
+			q := utility.NewQueue[entity.RadioMessage]()
+			queue = &q
+			s.prio_sorted_vc[msg.Priority] = queue
+		}
 		queue.Push(msg)
 	}
 }
