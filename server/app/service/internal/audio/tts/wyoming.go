@@ -1,4 +1,4 @@
-package audio
+package tts
 
 import (
 	"bufio"
@@ -112,72 +112,36 @@ func (w *wyomingConn) readMessage() (wyomingHeader, []byte, error) {
 func pcmBytesToInt16(b []byte) []int16 {
 	n := len(b) / 2
 	out := make([]int16, n)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		out[i] = int16(binary.LittleEndian.Uint16(b[i*2 : i*2+2]))
 	}
 	return out
 }
-
-func (t *Audio) Synthesize(ctx context.Context, sentencechan <-chan string, pcm chan<- []int16) error {
-	rawConn, err := net.Dial("tcp", "127.0.0.1:10200")
-	if err != nil {
-		return err
-	}
-	defer rawConn.Close()
-
-	wc := newWyomingConn(rawConn)
-
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-
-		case sentence, ok := <-sentencechan:
-			if !ok {
-				return nil
-			}
-			if err := t.synthesizeOne(ctx, wc, sentence, pcm); err != nil {
-				return err
-			}
-		}
-	}
-}
-
-func (t *Audio) synthesizeOne(ctx context.Context, wc *wyomingConn, text string, pcm chan<- []int16) error {
-	if err := wc.writeMessage("synthesize", synthesizeData{Text: text}, nil); err != nil {
+func (t *TTS) synthesizeOne(ctx context.Context, wc *wyomingConn, sentence string, w io.Writer) error {
+	if err := wc.writeMessage("synthesize", synthesizeData{Text: sentence}, nil); err != nil {
 		return fmt.Errorf("send synthesize: %w", err)
 	}
-
 	for {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 		default:
 		}
-
 		hdr, payload, err := wc.readMessage()
 		if err != nil {
 			return err
 		}
-
 		switch hdr.Type {
-
 		case "audio-start":
 			var start audioStartData
 			_ = json.Unmarshal(hdr.Data, &start)
 			fmt.Printf("[TTS] audio-start rate=%d channels=%d width=%d\n", start.Rate, start.Channels, start.Width)
-
 		case "audio-chunk":
-			samples := pcmBytesToInt16(payload)
-			select {
-			case pcm <- samples:
-			case <-ctx.Done():
-				return ctx.Err()
+			if _, err := w.Write(payload); err != nil {
+				return err
 			}
-
 		case "audio-stop":
 			return nil
-
 		case "error":
 			return fmt.Errorf("server error: %s", string(hdr.Data))
 		}

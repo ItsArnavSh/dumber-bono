@@ -9,12 +9,6 @@ import (
 	"github.com/maxhawkins/go-webrtcvad"
 )
 
-const (
-	SampleRate = 16000
-	Channels   = 1
-	ChunkSize  = 320 // 20ms
-)
-
 type Audio struct {
 	incoming   chan []byte
 	outgoing   chan []int16

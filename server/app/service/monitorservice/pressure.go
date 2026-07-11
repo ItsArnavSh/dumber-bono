@@ -9,7 +9,7 @@ import (
 )
 
 func (s *Service) monitorPressure(ctx context.Context) {
-	ticker := time.NewTicker(time.Second / 4)
+	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 
 	for {
@@ -54,5 +54,5 @@ func (s *Service) AlterConfidence(pressure entity.PilotPressurePhysicalFactors) 
 
 	//Now the possible values are 0 1 2 3 4 5
 	//And we can signal based on them
-	fmt.Print(s.driver_pressure)
+	fmt.Printf("%f : %d\n", pressure.LapDistance, s.driver_pressure)
 }

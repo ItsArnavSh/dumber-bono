@@ -8,6 +8,7 @@ import (
 	"dubmer-bono/app/service/radio"
 	"dubmer-bono/app/types"
 
+	"github.com/gordonklaus/portaudio"
 	"go.uber.org/zap"
 )
 
@@ -24,6 +25,11 @@ func InitServices(ctx context.Context, path string, logger *zap.SugaredLogger, r
 		return Services{}, err
 	}
 	monitor, err := monitor.NewService(ctx, logger, path, repo)
+	if err != nil {
+		return Services{}, err
+	}
+
+	err = portaudio.Initialize() //So Radio can use Speaker and Mic
 	if err != nil {
 		return Services{}, err
 	}
