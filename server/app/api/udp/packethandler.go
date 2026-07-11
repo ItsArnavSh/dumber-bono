@@ -77,7 +77,7 @@ func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 	case 3:
 		data, err := parsers.ParseEventPacket(payload)
 		if err != nil {
-			//u.logger.Errorf("Error parsing Event packet: %v", err)
+			u.logger.Errorf("Error parsing Event packet: %v", err)
 			return
 		}
 		event, err := mappers.MapToEventData(data)

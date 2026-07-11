@@ -54,5 +54,5 @@ func (s *Service) AlterConfidence(pressure entity.PilotPressurePhysicalFactors) 
 
 	//Now the possible values are 0 1 2 3 4 5
 	//And we can signal based on them
-	fmt.Printf("%f : %d\n", pressure.LapDistance, s.driver_pressure)
+	//fmt.Printf("%f : %d\n", pressure.LapDistance, s.driver_pressure)
 }

@@ -1,9 +1,8 @@
 package radio
 
-// 5 means MAX PRIORITY and 1 is Min priority
-// If We are on a 4 Turn, the radio will only get 4 priority basically
-func (s *Service) GetMessageByMaxPriority(priority int) (string, bool) {
-	for priority > 0 {
+func (s *Service) GetMessageByMinPriority(allowed_priority int) (string, bool) {
+	priority := 5
+	for priority >= allowed_priority {
 		vc := s.prio_sorted_vc[priority]
 		rad_msg, ok := vc.Pop()
 		if ok {
@@ -12,4 +11,11 @@ func (s *Service) GetMessageByMaxPriority(priority int) (string, bool) {
 		priority--
 	}
 	return "", false
+}
+
+func (s *Service) AddMessage() {
+	for msg := range s.msg_chan {
+		queue := s.prio_sorted_vc[msg.Priority]
+		queue.Push(msg)
+	}
 }

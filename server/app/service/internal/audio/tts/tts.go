@@ -26,7 +26,7 @@ func (t *TTS) Close() error {
 	return t.rawConn.Close()
 }
 
-func (t *TTS) StringToPCM(ctx context.Context, sentence string, speed float64) (io.Reader, error) {
+func (t *TTS) StringToPCM(ctx context.Context, sentence string) (io.Reader, error) {
 	pr, pw := io.Pipe()
 	go func() {
 		defer pw.Close()

@@ -7,6 +7,7 @@ import (
 	monitor "dubmer-bono/app/service/monitorservice"
 	"dubmer-bono/app/service/radio"
 	"dubmer-bono/app/types"
+	"dubmer-bono/app/types/entity"
 
 	"github.com/gordonklaus/portaudio"
 	"go.uber.org/zap"
@@ -24,7 +25,10 @@ func InitServices(ctx context.Context, path string, logger *zap.SugaredLogger, r
 	if err != nil {
 		return Services{}, err
 	}
-	monitor, err := monitor.NewService(ctx, logger, path, repo)
+
+	msg_chan := make(chan entity.RadioMessage) //To send messages to radio from MonitorService
+
+	monitor, err := monitor.NewService(ctx, logger, path, repo, msg_chan)
 	if err != nil {
 		return Services{}, err
 	}
@@ -33,7 +37,7 @@ func InitServices(ctx context.Context, path string, logger *zap.SugaredLogger, r
 	if err != nil {
 		return Services{}, err
 	}
-	radio, err := radio.NewService(ctx, logger, path, repo, monitor.GetPressure)
+	radio, err := radio.NewService(ctx, logger, path, repo, monitor.GetPressure, msg_chan)
 	if err != nil {
 		return Services{}, err
 	}

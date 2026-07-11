@@ -162,12 +162,84 @@ func ParseEventPacket(payload []byte) (*PacketEventData, error) {
 			return nil, fmt.Errorf("decode Retirement: %w", err)
 		}
 		packet.EventDetails.Retirement = d
+	case "DRSD":
+		var d DRSDisabled
+		if err := binary.Read(reader, binary.LittleEndian, &d); err != nil {
+			return nil, fmt.Errorf("decode DRSDisabled: %w", err)
+		}
+		packet.EventDetails.DRSDisabled = d
+	case "TMPT":
+		var d TeamMateInPits
+		if err := binary.Read(reader, binary.LittleEndian, &d); err != nil {
+			return nil, fmt.Errorf("decode TeamMateInPits: %w", err)
+		}
+		packet.EventDetails.TeamMateInPits = d
+	case "RCWN":
+		var d RaceWinner
+		if err := binary.Read(reader, binary.LittleEndian, &d); err != nil {
+			return nil, fmt.Errorf("decode RaceWinner: %w", err)
+		}
+		packet.EventDetails.RaceWinner = d
+	case "PENA":
+		var d Penalty
+		if err := binary.Read(reader, binary.LittleEndian, &d); err != nil {
+			return nil, fmt.Errorf("decode Penalty: %w", err)
+		}
+		packet.EventDetails.Penalty = d
+	case "SPTP":
+		var d SpeedTrap
+		if err := binary.Read(reader, binary.LittleEndian, &d); err != nil {
+			return nil, fmt.Errorf("decode SpeedTrap: %w", err)
+		}
+		packet.EventDetails.SpeedTrap = d
+	case "STLG":
+		var d StartLights
+		if err := binary.Read(reader, binary.LittleEndian, &d); err != nil {
+			return nil, fmt.Errorf("decode StartLights: %w", err)
+		}
+		packet.EventDetails.StartLights = d
+	case "DTSV":
+		var d DriveThroughPenaltyServed
+		if err := binary.Read(reader, binary.LittleEndian, &d); err != nil {
+			return nil, fmt.Errorf("decode DriveThroughPenaltyServed: %w", err)
+		}
+		packet.EventDetails.DriveThroughPenaltyServed = d
+	case "SGSV":
+		var d StopGoPenaltyServed
+		if err := binary.Read(reader, binary.LittleEndian, &d); err != nil {
+			return nil, fmt.Errorf("decode StopGoPenaltyServed: %w", err)
+		}
+		packet.EventDetails.StopGoPenaltyServed = d
+	case "FLBK":
+		var d Flashback
+		if err := binary.Read(reader, binary.LittleEndian, &d); err != nil {
+			return nil, fmt.Errorf("decode Flashback: %w", err)
+		}
+		packet.EventDetails.Flashback = d
 	case "BUTN":
 		var d Buttons
 		if err := binary.Read(reader, binary.LittleEndian, &d); err != nil {
 			return nil, fmt.Errorf("decode Buttons: %w", err)
 		}
 		packet.EventDetails.Buttons = d
+	case "OVTK":
+		var d Overtake
+		if err := binary.Read(reader, binary.LittleEndian, &d); err != nil {
+			return nil, fmt.Errorf("decode Overtake: %w", err)
+		}
+		packet.EventDetails.Overtake = d
+	case "SCAR":
+		var d SafetyCarEvent
+		if err := binary.Read(reader, binary.LittleEndian, &d); err != nil {
+			return nil, fmt.Errorf("decode SafetyCarEvent: %w", err)
+		}
+		packet.EventDetails.SafetyCar = d
+	case "COLL":
+		var d Collision
+		if err := binary.Read(reader, binary.LittleEndian, &d); err != nil {
+			return nil, fmt.Errorf("decode Collision: %w", err)
+		}
+		packet.EventDetails.Collision = d
 	case "SSTA", "SEND", "DRSE", "CHQF", "RDFL", "LGOT":
 		// no payload
 	default:

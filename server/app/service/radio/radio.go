@@ -18,9 +18,10 @@ type Service struct {
 	getDriverPressure func() int
 	prio_sorted_vc    map[int]utility.ExpiryQueue[entity.RadioMessage]
 	tts               *tts.TTS
+	msg_chan          <-chan entity.RadioMessage
 }
 
-func NewService(ctx context.Context, logger *zap.SugaredLogger, root string, repo *service.Repository, driver_pressure func() int) (types.Radio, error) {
+func NewService(ctx context.Context, logger *zap.SugaredLogger, root string, repo *service.Repository, driver_pressure func() int, msgchan <-chan entity.RadioMessage) (types.Radio, error) {
 	tts, err := tts.NewTTS()
 	if err != nil {
 		return Service{}, err
@@ -30,28 +31,23 @@ func NewService(ctx context.Context, logger *zap.SugaredLogger, root string, rep
 		logger:            logger,
 		getDriverPressure: driver_pressure,
 		tts:               tts,
+		msg_chan:          msgchan,
 	}
-	serv.TestSpeaker(ctx)
 	return serv, nil
 }
 
-func (s *Service) TestSpeaker(ctx context.Context) {
-	text := "Hi Hamilton, Radio Check. " +
-		"Box box box, confirm undercut on Verstappen. " +
-		"Piastri and Norris are side by side into Eau Rouge. " +
-		"Leclerc, DRS enabled, gap to Russell is nine tenths. " +
-		"Antonelli locking up into the chicane. " +
-		"Alonso and Stroll running the medium compound. " +
-		"Sainz and Albon on an alternate strategy at Williams. " +
-		"Hulkenberg and Bortoleto for Audi, both on fresh softs. " +
-		"Gasly and Colapinto battling for P8 at Alpine. " +
-		"Ocon and Bearman holding position for Haas. " +
-		"Perez and Bottas debuting for Cadillac this weekend. " +
-		"Hadjar and Lawson through the final sector. " +
-		"Lindblad on his out-lap for Racing Bulls. " +
-		"Push now, push now, delta minus point-three. " +
-		"Safety car deployed, virtual safety car ending. " +
-		"Parc ferme conditions apply after qualifying."
-	r, _ := s.tts.StringToPCM(ctx, text, 2)
-	_ = speaker.PlayPCM(ctx, r)
+func (s *Service) radioDriver(ctx context.Context) {
+	for {
+		pressure := s.getDriverPressure()
+		message, ok := s.GetMessageByMinPriority(pressure)
+		if !ok {
+			continue
+		}
+		r, err := s.tts.StringToPCM(ctx, message)
+		if err != nil {
+			s.logger.Errorf("Error converting string%w", err)
+		}
+		s.logger.Infof("Engineer: %s \n Priority: %d", message, pressure)
+		_ = speaker.PlayPCM(ctx, r)
+	}
 }
