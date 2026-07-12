@@ -21,10 +21,6 @@ type Services struct {
 }
 
 func InitServices(ctx context.Context, path string, logger *zap.SugaredLogger, repo *service.Repository) (Services, error) {
-	ingestion, err := ingestion.NewService(ctx, logger, path, repo)
-	if err != nil {
-		return Services{}, err
-	}
 
 	msg_chan := make(chan entity.RadioMessage) //To send messages to radio from MonitorService
 
@@ -38,6 +34,10 @@ func InitServices(ctx context.Context, path string, logger *zap.SugaredLogger, r
 		return Services{}, err
 	}
 	radio, err := radio.NewService(ctx, logger, path, repo, monitor.GetPressure, msg_chan)
+	if err != nil {
+		return Services{}, err
+	}
+	ingestion, err := ingestion.NewService(ctx, logger, path, repo, monitor)
 	if err != nil {
 		return Services{}, err
 	}

@@ -5,6 +5,10 @@ import (
 	"dubmer-bono/app/service"
 	"dubmer-bono/app/types"
 	"dubmer-bono/app/types/entity"
+	"dubmer-bono/app/types/entity/consts"
+	telentity "dubmer-bono/app/types/entity/tel-entity"
+	"fmt"
+	"strconv"
 	"time"
 
 	"go.uber.org/zap"
@@ -35,10 +39,8 @@ func NewService(ctx context.Context, logger *zap.SugaredLogger, root string, rep
 	return s, nil
 }
 func (s *Service) RegisterShufflerFunctions() {
-	s.shuffler.Register(string(entity.SerFuncPosition), s.SendInformOfPosition)
 	s.shuffler.Register(string(entity.SerFuncGapToFront), s.SendInformOfGapToFront)
 	s.shuffler.Register(string(entity.SerFuncGapToLeader), s.SendInformOfGapToLeader)
-	s.shuffler.Register(string(entity.SerFuncCurrentLap), s.SendInformOfCurrentLap)
 	s.shuffler.Register(string(entity.SerFuncLastLapTime), s.SendInformOfLastLapTime)
 	s.shuffler.Register(string(entity.SerFuncTotalWarnings), s.SendInformOfTotalWarnings)
 }
@@ -86,4 +88,32 @@ func (s *Service) RandomStatsMonitor(ctx context.Context) {
 		case <-time.After(wait):
 		}
 	}
+}
+
+type PlayerDetails struct {
+	Driver_name, Team_name, Player_nation string
+}
+
+func (s *Service) getPlayerDetailsByID(id int) PlayerDetails {
+	fmt.Println("called by carno ", id)
+	var data telentity.ParticipantData
+	s.repo.Cache.Get(string(entity.PARTICIPANT), strconv.Itoa(id), &data)
+	fmt.Println(data)
+	team_name := consts.TeamIDs[uint16(data.TeamId)]
+	driver_name := consts.DriverIDs[uint16(data.DriverId)]
+	nationality := consts.NationalityIDs[uint16(data.Nationality)]
+
+	return PlayerDetails{
+		Team_name:     team_name,
+		Driver_name:   driver_name,
+		Player_nation: nationality,
+	}
+}
+func (s *Service) getCarPosition(id uint8) int {
+	var data telentity.LapData
+	if err := s.repo.Cache.Get(string(entity.LAPDATA), strconv.Itoa(int(id)), &data); err != nil {
+		s.logger.Errorf("failed to get lap data for car %d: %v", id, err)
+		return 0
+	}
+	return int(data.CarPosition)
 }

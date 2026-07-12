@@ -16,9 +16,10 @@ import (
 
 // The Ingestion Service Saves the Data in the relevant DBs so that the other processes can query into it
 type Service struct {
-	repo   *service.Repository
-	logger *zap.SugaredLogger
-	acc    TeleAccumulator
+	repo    *service.Repository
+	logger  *zap.SugaredLogger
+	acc     TeleAccumulator
+	monitor types.Monitor
 
 	lapThrottler         utility.Throttler
 	sessionThrottler     utility.Throttler
@@ -34,8 +35,9 @@ type Service struct {
 
 var _ types.Ingestion = &Service{}
 
-func NewService(ctx context.Context, logger *zap.SugaredLogger, root string, repo *service.Repository) (types.Ingestion, error) {
-	serv := &Service{repo: repo, logger: logger}
+func NewService(ctx context.Context, logger *zap.SugaredLogger, root string, repo *service.Repository, monitor types.Monitor) (types.Ingestion, error) {
+
+	serv := &Service{repo: repo, logger: logger, monitor: monitor}
 	serv.acc = TeleAccumulator{
 		signal_func: serv.SignalPush,
 	}
@@ -108,7 +110,7 @@ func (s *Service) IngestLapPacket(payload telentity.LapDataPacket) {
 }
 
 func (s *Service) IngestEventPacket(payload telentity.PacketEventData) {
-
+	s.monitor.EventMonitor(payload)
 }
 
 func (s *Service) IngestParticipantPacket(payload telentity.PacketParticipantsData) {
@@ -121,12 +123,11 @@ func (s *Service) IngestParticipantPacket(payload telentity.PacketParticipantsDa
 	s.repo.Cache.Set(string(entity.GAMESESSION), string(entity.MYDRIVERID), me.DriverId)
 	s.repo.Cache.Set(string(entity.GAMESESSION), string(entity.MYTEAMID), me.TeamId)
 	s.repo.Cache.Set(string(entity.GAMESESSION), string(entity.MYRACEINDEX), me.RaceNumber)
-
 	if !s.participantThrottler.Allow() {
 		return
 	}
 	for i := range payload.NumActiveCars {
-		s.repo.Cache.Set(string(entity.PARTICIPANT), string(i), payload.Participants[i])
+		s.repo.Cache.Set(string(entity.PARTICIPANT), strconv.Itoa(int(i)), payload.Participants[i])
 	}
 }
 

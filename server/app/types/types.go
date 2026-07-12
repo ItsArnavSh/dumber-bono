@@ -23,6 +23,7 @@ type Ingestion interface {
 
 type Monitor interface {
 	GetPressure() int
+	EventMonitor(evt telentity.PacketEventData)
 }
 
 type Radio interface {
