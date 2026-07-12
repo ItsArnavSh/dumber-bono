@@ -10,6 +10,7 @@ require (
 
 require (
 	github.com/ClickHouse/ch-go v0.73.0 // indirect
+	github.com/ItsArnavSh/serializablefunctions v0.0.3 // indirect
 	github.com/andybalholm/brotli v1.2.1 // indirect
 	github.com/antlko/num2text v1.0.2 // indirect
 	github.com/apache/arrow-go/v18 v18.1.0 // indirect

@@ -74,6 +74,10 @@ func (s *Service) IngestHeader(payload *parsers.PacketHeader) error {
 		s.logger.Errorf("failed to set player index in cache: %v", err)
 		return err
 	}
+	if err := s.repo.Cache.Set(string(entity.GAMESESSION), string(entity.LASTUPDATED), time.Now()); err != nil {
+		s.logger.Errorf("failed to update last updated key in badger: %v", err)
+		return err
+	}
 	return nil
 }
 

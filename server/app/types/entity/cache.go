@@ -24,4 +24,5 @@ const (
 	MYDRIVERID  Key = "mydriverid"
 	MYTEAMID    Key = "myteamid"
 	MYRACEINDEX Key = "myraceindex"
+	LASTUPDATED Key = "lastupdated"
 )

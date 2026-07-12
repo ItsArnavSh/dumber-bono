@@ -41,21 +41,17 @@ func NewService(ctx context.Context, logger *zap.SugaredLogger, root string, rep
 }
 
 func (s *Service) radioTheDriver(ctx context.Context) {
-	s.logger.Infof("starting driver radio loop")
 	ticker := time.NewTicker(time.Second * 1)
 	defer ticker.Stop()
 	for {
 		select {
 		case <-ctx.Done():
-			s.logger.Infof("stopping driver radio loop: %v", ctx.Err())
 			return
 		case <-ticker.C:
 			pressure := s.getDriverPressure()
-			s.logger.Debugf("driver pressure: %d", pressure)
 
 			message, ok := s.GetMessageByMinPriority()
 			if !ok {
-				s.logger.Debugf("no message found for pressure %d", pressure)
 				continue
 			}
 

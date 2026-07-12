@@ -16,7 +16,12 @@ func (s *Service) GetMessageByMinPriority() (string, bool) {
 		if ok {
 			rad_msg, ok := vc.Pop()
 			if ok {
-				return rad_msg.Message, true
+				switch p := rad_msg.Message.(type) {
+				case entity.DirectMessage:
+					return p.Text, true
+				case entity.FunctionMessage:
+					return p.Fn(), true
+				}
 			}
 		}
 		priority--

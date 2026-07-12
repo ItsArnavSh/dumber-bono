@@ -8,7 +8,7 @@ import (
 
 func (s *Service) MyCarIndex() int {
 	var ID int
-	s.repo.Cache.Get(string(entity.GAMESESSION), string(entity.SESSIONID), &ID)
+	s.repo.Cache.Get(string(entity.GAMESESSION), string(entity.MYCARID), &ID)
 	return ID
 }
 

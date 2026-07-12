@@ -2,6 +2,8 @@ github.com/ClickHouse/ch-go v0.73.0 h1:jsHiGRbQ3sz+gekvDFJF29LWDo5dzbJm5s1h8TWVP
 github.com/ClickHouse/ch-go v0.73.0/go.mod h1:wkFIxrqlXeRJ9cn3r5Fz5Qen9jl5aTMPuGZeuJpANNY=
 github.com/ClickHouse/clickhouse-go/v2 v2.47.0 h1:ZDAzrnKSOPTIsm4tdUNfrii2yc8dk4SVRLC77BR7Z5Q=
 github.com/ClickHouse/clickhouse-go/v2 v2.47.0/go.mod h1:sPj7C7UYQ2MWHcfX+4eGN6nwnCqwUKfgO6PcwKpd6K8=
+github.com/ItsArnavSh/serializablefunctions v0.0.3 h1:NHIUqKeJlr7vvAmEeWo81L+zzBjUwxPtNf1ujg2yn4E=
+github.com/ItsArnavSh/serializablefunctions v0.0.3/go.mod h1:GSy1fDUWCDl45zCRG2yjjc1y/DFo04zWlzhl5BZMwZw=
 github.com/andybalholm/brotli v1.2.1 h1:R+f5xP285VArJDRgowrfb9DqL18yVK0gKAW/F+eTWro=
 github.com/andybalholm/brotli v1.2.1/go.mod h1:rzTDkvFWvIrjDXZHkuS16NPggd91W3kUSvPlQ1pLaKY=
 github.com/antlko/num2text v1.0.2 h1:qnpjW36z7OhqtbNq8zMIqOWuidm7pgz+NeANlLHYMGI=
