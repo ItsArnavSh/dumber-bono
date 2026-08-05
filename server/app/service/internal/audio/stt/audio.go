@@ -2,21 +2,26 @@ package audio
 
 import (
 	"context"
-	"dubmer-bono/app/service/internal/llm"
-	"log"
+	"strings"
+	"sync"
 
-	"github.com/gordonklaus/portaudio"
 	"github.com/maxhawkins/go-webrtcvad"
 )
 
 type STT struct {
-	incoming   chan []byte
-	vad        *webrtcvad.VAD
-	whisper    *Whisper
-	wordchunks chan string
+	incoming       chan []byte
+	vad            *webrtcvad.VAD
+	whisper        *Whisper
+	StrChunk       *strings.Builder
+	SessionMessage string
+	mu             sync.Mutex
+	closed         bool //Flag to avoid sending in a closed channel
+
+	done chan error // Signal channel for completion
+	wg   sync.WaitGroup
 }
 
-func NewSTTHandler(ctx context.Context, incoming chan []byte, outgoing chan []int16, wordchunks chan string) (Audio, error) {
+func NewSTTHandler(ctx context.Context, incoming chan []byte, outgoing chan []int16) (STT, error) {
 	vad, err := webrtcvad.New()
 	if err != nil {
 		return STT{}, err
@@ -26,30 +31,51 @@ func NewSTTHandler(ctx context.Context, incoming chan []byte, outgoing chan []in
 		"../bin/whisper-cli",
 		"../models/ggml-base.en.bin",
 	)
-	return Audio{
-		incoming:   incoming,
-		outgoing:   outgoing,
-		vad:        vad,
-		whisper:    whisper,
-		wordchunks: wordchunks,
+	return STT{
+		incoming: incoming,
+		vad:      vad,
+		whisper:  whisper,
 	}, nil
 }
 
-func (a *Audio) SetupPortAudio(ctx context.Context) error {
-	err := portaudio.Initialize()
-	return err
+func (a *STT) InitSTT(ctx context.Context) {
+	go a.recordAudio(ctx)
 }
 
-func (a *Audio) InvokeLLM(ctx context.Context, prompt string) error {
-	tokens := make(chan string, 32)
-	go func() {
-		systemPrompt := "You are an F1 race engineer. While testing, named Dumber Bono. Make shit up for now. Give conversational very very short answers Its a high panic situation you get a few seconds to speak. Like one liners"
-		if err := llm.StreamLLM(ctx, systemPrompt, prompt, "openai/gpt-oss-20b", tokens); err != nil {
-			log.Println("stream error:", err)
-		}
-	}()
-	for tok := range tokens {
-		a.wordchunks <- tok
+func (a *STT) StartMessageRec(ctx context.Context) {
+	// Initialize the builder
+	a.StrChunk = &strings.Builder{}
+
+	// Open Incoming
+	{
+		a.mu.Lock()
+		a.incoming = make(chan []byte)
+		a.done = make(chan error, 1) // Buffered to avoid goroutine leak
+		a.closed = false
+		a.mu.Unlock()
 	}
-	return nil
+
+	// Start transcription in parallel
+	a.wg.Add(1)
+	go a.transcribeWAV(ctx)
+}
+
+func (a *STT) EndMessageRec(ctx context.Context) (string, error) {
+	// Close Incoming - signals transcribeWAV to stop iterating
+	{
+		a.mu.Lock()
+		close(a.incoming)
+		a.closed = true
+		a.mu.Unlock()
+	}
+	// Wait for transcribeWAV goroutine to finish
+	a.wg.Wait()
+
+	// Get result from done channel
+	err := <-a.done
+	if err != nil {
+		return "", err
+	}
+
+	return a.StrChunk.String(), nil
 }
