@@ -28,10 +28,7 @@ func NewSTTHandler(ctx context.Context) (*STT, error) {
 		return &STT{}, err
 	}
 	vad.SetMode(3)
-	whisper := newWhisper(
-		"../bin/whisper-cli",
-		"../models/ggml-base.en.bin",
-	)
+	whisper := newWhisper()
 	return &STT{
 		incoming: incoming,
 		vad:      vad,

@@ -3,7 +3,6 @@ package stt
 import (
 	"context"
 	"dubmer-bono/app/service/internal/audio"
-	"fmt"
 	"log"
 
 	"github.com/gordonklaus/portaudio"
@@ -22,7 +21,6 @@ func (a *STT) recordAudio(ctx context.Context) {
 	}
 	defer stream.Stop()
 
-	fmt.Println("Recording...")
 	a.processAudioLoop(stream, samples)
 }
 

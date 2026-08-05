@@ -7,16 +7,22 @@ import (
 	"fmt"
 	"mime/multipart"
 	"net/http"
+	"os"
 )
 
 type Whisper struct {
-	Binary string
+	ApiKey string
 	Model  string
 }
 
-func newWhisper(binary, model string) *Whisper {
+func newWhisper() *Whisper {
+	model := os.Getenv("GROQ_STT_MODEL")
+	if model == "" {
+		model = "whisper-large-v3" // Default fallback model if not specified
+	}
+
 	return &Whisper{
-		Binary: binary,
+		ApiKey: os.Getenv("GROQ_API_KEY"),
 		Model:  model,
 	}
 }
@@ -24,8 +30,11 @@ func newWhisper(binary, model string) *Whisper {
 func (a *STT) transcribeWAV(ctx context.Context) {
 	defer a.wg.Done()
 
+	// Initialize Whisper client using the updated constructor
+	whisperClient := newWhisper()
+
 	for wav := range a.incoming {
-		text, err := transcribe(ctx, wav)
+		text, err := whisperClient.transcribe(ctx, wav)
 		if err != nil {
 			fmt.Println(err)
 			a.done <- err // Send error to done channel
@@ -37,7 +46,7 @@ func (a *STT) transcribeWAV(ctx context.Context) {
 	a.done <- nil
 }
 
-func transcribe(ctx context.Context, wav []byte) (string, error) {
+func (w *Whisper) transcribe(ctx context.Context, wav []byte) (string, error) {
 	body := new(bytes.Buffer)
 	writer := multipart.NewWriter(body)
 
@@ -46,6 +55,11 @@ func transcribe(ctx context.Context, wav []byte) (string, error) {
 		return "", err
 	}
 	if _, err := part.Write(wav); err != nil {
+		return "", err
+	}
+
+	// Required form field for Groq API model specification
+	if err := writer.WriteField("model", w.Model); err != nil {
 		return "", err
 	}
 
@@ -62,7 +76,7 @@ func transcribe(ctx context.Context, wav []byte) (string, error) {
 	req, err := http.NewRequestWithContext(
 		ctx,
 		http.MethodPost,
-		"http://127.0.0.1:8088/inference",
+		"https://api.groq.com/openai/v1/audio/transcriptions",
 		body,
 	)
 	if err != nil {
@@ -70,12 +84,19 @@ func transcribe(ctx context.Context, wav []byte) (string, error) {
 	}
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", w.ApiKey))
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return "", err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		var errResp map[string]any
+		_ = json.NewDecoder(resp.Body).Decode(&errResp)
+		return "", fmt.Errorf("groq api error (status %d): %v", resp.StatusCode, errResp)
+	}
 
 	var result struct {
 		Text string `json:"text"`
