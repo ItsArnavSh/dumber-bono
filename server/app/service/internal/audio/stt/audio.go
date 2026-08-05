@@ -9,18 +9,17 @@ import (
 	"github.com/maxhawkins/go-webrtcvad"
 )
 
-type Audio struct {
+type STT struct {
 	incoming   chan []byte
-	outgoing   chan []int16
 	vad        *webrtcvad.VAD
 	whisper    *Whisper
 	wordchunks chan string
 }
 
-func NewAudioHandler(ctx context.Context, incoming chan []byte, outgoing chan []int16, wordchunks chan string) (Audio, error) {
+func NewSTTHandler(ctx context.Context, incoming chan []byte, outgoing chan []int16, wordchunks chan string) (Audio, error) {
 	vad, err := webrtcvad.New()
 	if err != nil {
-		return Audio{}, err
+		return STT{}, err
 	}
 	vad.SetMode(3)
 	whisper := newWhisper(

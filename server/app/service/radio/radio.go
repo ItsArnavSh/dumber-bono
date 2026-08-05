@@ -20,9 +20,11 @@ type Service struct {
 	prio_sorted_vc    map[int]*utility.ExpiryQueue[entity.RadioMessage]
 	tts               *tts.TTS
 	msg_chan          <-chan entity.RadioMessage
+	hotkey_chan       <-chan entity.HotKeyEvent
+	muted             bool
 }
 
-func NewService(ctx context.Context, logger *zap.SugaredLogger, root string, repo *service.Repository, driver_pressure func() int, msgchan <-chan entity.RadioMessage) (types.Radio, error) {
+func NewService(ctx context.Context, logger *zap.SugaredLogger, root string, repo *service.Repository, driver_pressure func() int, msgchan <-chan entity.RadioMessage, hkeychan <-chan entity.HotKeyEvent) (types.Radio, error) {
 	tts, err := tts.NewTTS()
 	if err != nil {
 		return Service{}, err
@@ -34,6 +36,7 @@ func NewService(ctx context.Context, logger *zap.SugaredLogger, root string, rep
 		tts:               tts,
 		msg_chan:          msgchan,
 		prio_sorted_vc:    make(map[int]*utility.ExpiryQueue[entity.RadioMessage]),
+		hotkey_chan:       hkeychan,
 	}
 	go serv.MessageChanListner() // Listens to shared channel and updates queue
 	go serv.radioTheDriver(ctx)  // Periodically checks queue and radios message when allowed

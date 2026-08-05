@@ -20,7 +20,7 @@ type Services struct {
 	agent     types.Agent
 }
 
-func InitServices(ctx context.Context, path string, logger *zap.SugaredLogger, repo *service.Repository) (Services, error) {
+func InitServices(ctx context.Context, path string, logger *zap.SugaredLogger, repo *service.Repository, hkeys chan entity.HotKeyEvent) (Services, error) {
 
 	msg_chan := make(chan entity.RadioMessage) //To send messages to radio from MonitorService
 
@@ -33,7 +33,7 @@ func InitServices(ctx context.Context, path string, logger *zap.SugaredLogger, r
 	if err != nil {
 		return Services{}, err
 	}
-	radio, err := radio.NewService(ctx, logger, path, repo, monitor.GetPressure, msg_chan)
+	radio, err := radio.NewService(ctx, logger, path, repo, monitor.GetPressure, msg_chan, hkeys)
 	if err != nil {
 		return Services{}, err
 	}

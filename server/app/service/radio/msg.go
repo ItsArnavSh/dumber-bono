@@ -15,6 +15,10 @@ func (s *Service) GetMessageByMinPriority() (string, bool) {
 		vc, ok := s.prio_sorted_vc[priority]
 		if ok {
 			rad_msg, ok := vc.Pop()
+			//If muted only print top level messages, SC other events etc
+			if s.muted && rad_msg.Priority != maxPriority {
+				continue
+			}
 			if ok {
 				switch p := rad_msg.Message.(type) {
 				case entity.DirectMessage:

@@ -182,6 +182,10 @@ func (s *Service) handleCollision(d telentity.Collision) {
 
 	car1 := s.getPlayerDetailsByID(int(d.Vehicle1Idx))
 	car2 := s.getPlayerDetailsByID(int(d.Vehicle2Idx))
-	msg := fmt.Sprintf("Collision between %s and %s", car1.Driver_name, car2.Driver_name)
-	s.PushToRadio(entity.DirectMessage{Text: msg}, 2, time.Minute)
+	lap, _ := s.GetLapData()
+	if lap.CurrentLapNum != 1 {
+		msg := fmt.Sprintf("Collision between %s and %s", car1.Driver_name, car2.Driver_name)
+
+		s.PushToRadio(entity.DirectMessage{Text: msg}, 2, time.Minute)
+	}
 }
