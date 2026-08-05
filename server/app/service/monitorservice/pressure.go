@@ -18,7 +18,7 @@ func (s *Service) monitorPressure(ctx context.Context) {
 			var sessionid uint64
 			var carno int
 			if err := s.repo.Cache.Get(string(entity.GAMESESSION), string(entity.SESSIONID), &sessionid); err != nil {
-				fmt.Println("session cache miss:", err)
+				//fmt.Println("session cache miss:", err)
 				continue
 			}
 			if err := s.repo.Cache.Get(string(entity.GAMESESSION), string(entity.MYCARID), &carno); err != nil {

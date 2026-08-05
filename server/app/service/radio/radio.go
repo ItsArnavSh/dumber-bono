@@ -4,6 +4,7 @@ import (
 	"context"
 	"dubmer-bono/app/service"
 	"dubmer-bono/app/service/internal/audio/speaker"
+	"dubmer-bono/app/service/internal/audio/stt"
 	"dubmer-bono/app/service/internal/audio/tts"
 	"dubmer-bono/app/types"
 	"dubmer-bono/app/types/entity"
@@ -19,6 +20,7 @@ type Service struct {
 	getDriverPressure func() int
 	prio_sorted_vc    map[int]*utility.ExpiryQueue[entity.RadioMessage]
 	tts               *tts.TTS
+	stt               *stt.STT
 	msg_chan          <-chan entity.RadioMessage
 	hotkey_chan       <-chan entity.HotKeyEvent
 	muted             bool
@@ -29,17 +31,24 @@ func NewService(ctx context.Context, logger *zap.SugaredLogger, root string, rep
 	if err != nil {
 		return Service{}, err
 	}
+	stt, err := stt.NewSTTHandler(ctx)
+	if err != nil {
+		return Service{}, err
+	}
 	serv := &Service{
 		repo:              repo,
 		logger:            logger,
 		getDriverPressure: driver_pressure,
 		tts:               tts,
+		stt:               stt,
 		msg_chan:          msgchan,
 		prio_sorted_vc:    make(map[int]*utility.ExpiryQueue[entity.RadioMessage]),
 		hotkey_chan:       hkeychan,
 	}
-	go serv.MessageChanListner() // Listens to shared channel and updates queue
-	go serv.radioTheDriver(ctx)  // Periodically checks queue and radios message when allowed
+	go serv.MessageChanListner()    // Listens to shared channel and updates queue
+	go serv.radioTheDriver(ctx)     // Periodically checks queue and radios message when allowed
+	go serv.HandleHotKeyEvents(ctx) //Act acc to the hot key events
+	serv.stt.InitSTT(ctx)
 	return serv, nil
 }
 

@@ -1,4 +1,4 @@
-package audio
+package stt
 
 import (
 	"context"
@@ -21,17 +21,18 @@ type STT struct {
 	wg   sync.WaitGroup
 }
 
-func NewSTTHandler(ctx context.Context, incoming chan []byte, outgoing chan []int16) (STT, error) {
+func NewSTTHandler(ctx context.Context) (*STT, error) {
+	incoming := make(chan []byte)
 	vad, err := webrtcvad.New()
 	if err != nil {
-		return STT{}, err
+		return &STT{}, err
 	}
 	vad.SetMode(3)
 	whisper := newWhisper(
 		"../bin/whisper-cli",
 		"../models/ggml-base.en.bin",
 	)
-	return STT{
+	return &STT{
 		incoming: incoming,
 		vad:      vad,
 		whisper:  whisper,

@@ -1,4 +1,4 @@
-package audio
+package stt
 
 import (
 	"bytes"
