@@ -1,6 +1,9 @@
 package entity
 
-import "time"
+import (
+	"io"
+	"time"
+)
 
 type PilotPressurePhysicalFactors struct {
 	// Turn Indicators
@@ -28,9 +31,16 @@ type FunctionMessage struct {
 
 func (FunctionMessage) isRadioPayload() {}
 
+type IOPipe struct {
+	Pipe *io.PipeReader
+}
+
+func (IOPipe) isRadioPayload() {}
+
 const (
 	DIRECT MessageType = iota
 	FUNCTION
+	IOPIPE
 )
 
 type RadioMessage struct {
