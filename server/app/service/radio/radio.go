@@ -9,6 +9,7 @@ import (
 	"dubmer-bono/app/types"
 	"dubmer-bono/app/types/entity"
 	"dubmer-bono/app/utility"
+	"sync"
 	"time"
 
 	"go.uber.org/zap"
@@ -24,6 +25,7 @@ type Service struct {
 	msg_chan          <-chan entity.RadioMessage
 	hotkey_chan       <-chan entity.HotKeyEvent
 	muted             bool
+	maplock           sync.RWMutex
 }
 
 func NewService(ctx context.Context, logger *zap.SugaredLogger, root string, repo *service.Repository, driver_pressure func() int, msgchan <-chan entity.RadioMessage, hkeychan <-chan entity.HotKeyEvent) (types.Radio, error) {

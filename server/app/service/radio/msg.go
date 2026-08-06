@@ -12,7 +12,9 @@ func (s *Service) GetMessageByMinPriority() (string, bool) {
 	priority := maxPriority
 	allowed_priority := s.getDriverPressure()
 	for priority >= allowed_priority {
+		s.maplock.Lock()
 		vc, ok := s.prio_sorted_vc[priority]
+		s.maplock.Unlock()
 		if ok {
 			rad_msg, ok := vc.Pop()
 			//If muted only print top level messages, SC other events etc
