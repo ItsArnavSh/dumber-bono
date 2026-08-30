@@ -29,7 +29,9 @@ func NewSTTHandler(ctx context.Context) (*STT, error) {
 	if err != nil {
 		return &STT{}, err
 	}
-	vad.SetMode(3)
+	if err := vad.SetMode(3); err != nil {
+		return &STT{}, err
+	}
 	whisper := newWhisper()
 
 	log.Println("[STT INIT] STT Handler initialized")

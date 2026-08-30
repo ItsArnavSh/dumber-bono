@@ -17,7 +17,6 @@ type Services struct {
 	ingestion types.Ingestion
 	monitor   types.Monitor
 	radio     types.Radio
-	agent     types.Agent
 }
 
 func InitServices(ctx context.Context, path string, logger *zap.SugaredLogger, repo *service.Repository, hkeys chan entity.HotKeyEvent) (Services, error) {

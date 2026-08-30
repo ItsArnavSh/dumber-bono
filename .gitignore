@@ -1,2 +1,6 @@
 .env
 tmp
+bin/
+coverage.out
+*.db
+*.duckdb

@@ -39,7 +39,7 @@ const (
 )
 
 func NewService(ctx context.Context, logger *zap.SugaredLogger, root string, repo *service.Repository, driver_pressure func() int, msgchan chan entity.RadioMessage, hkeychan <-chan entity.HotKeyEvent) (types.Radio, error) {
-	tts, err := tts.NewTTS()
+	tts, err := tts.NewTTS(ctx)
 	if err != nil {
 		return Service{}, err
 	}

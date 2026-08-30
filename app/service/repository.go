@@ -21,16 +21,16 @@ func NewRepository(ctx context.Context, root string) (*Repository, error) {
 		return nil, fmt.Errorf("init badger: %w", err)
 	}
 
-	db, err := sqlite.NewSQLite(filepath.Join(root, "sqlite.db"))
+	db, err := sqlite.NewSQLite(ctx, filepath.Join(root, "sqlite.db"))
 	if err != nil {
-		cache.Close()
+		_ = cache.Close()
 		return nil, fmt.Errorf("init sqlite: %w", err)
 	}
 
 	olap, err := duckdb.NewDuckDB(ctx, filepath.Join(root, "duck.db"))
 	if err != nil {
-		cache.Close()
-		db.Close()
+		_ = cache.Close()
+		_ = db.Close()
 		return nil, fmt.Errorf("init duckdb: %w", err)
 	}
 

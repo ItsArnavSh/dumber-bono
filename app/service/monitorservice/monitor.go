@@ -97,7 +97,9 @@ type PlayerDetails struct {
 func (s *Service) getPlayerDetailsByID(id int) PlayerDetails {
 	fmt.Println("called by carno ", id)
 	var data telentity.ParticipantData
-	s.repo.Cache.Get(string(entity.PARTICIPANT), strconv.Itoa(id), &data)
+	if err := s.repo.Cache.Get(string(entity.PARTICIPANT), strconv.Itoa(id), &data); err != nil {
+		s.logger.Warnf("no cached participant for car %d: %v", id, err)
+	}
 	fmt.Println(data)
 	team_name := consts.TeamIDs[uint16(data.TeamId)]
 	driver_name := consts.DriverIDs[uint16(data.DriverId)]

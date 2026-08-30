@@ -18,14 +18,16 @@ func (d *DuckDB) writeTelemetrysBatch(ctx context.Context, frames []entity.Telem
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	return conn.Raw(func(driverConn any) error {
 		appender, err := duckdb.NewAppenderFromConn(driverConn.(driver.Conn), "", "telemetry_frames")
 		if err != nil {
 			return err
 		}
-		defer appender.Close()
+		defer func() {
+			_ = appender.Close()
+		}()
 
 		for _, f := range frames {
 			if err := appender.AppendRow(

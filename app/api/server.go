@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"dubmer-bono/app/api/hotkeys"
-	"dubmer-bono/app/api/types"
 	"dubmer-bono/app/api/udp"
 	"dubmer-bono/app/service"
 	"dubmer-bono/app/types/entity"
@@ -13,9 +12,8 @@ import (
 )
 
 type Server struct {
-	logger     *zap.SugaredLogger
-	services   Services
-	keyListner types.HotKeyHandler
+	logger   *zap.SugaredLogger
+	services Services
 }
 
 func NewServer(ctx context.Context, logger *zap.SugaredLogger, path string) (Server, error) {
@@ -35,7 +33,10 @@ func NewServer(ctx context.Context, logger *zap.SugaredLogger, path string) (Ser
 		return Server{}, err
 	}
 	eventListner := make(chan entity.HotKeyEvent)
-	hkey_listner.InitHandler(eventListner)
+	if err := hkey_listner.InitHandler(eventListner); err != nil {
+		logger.Errorf("error initializing hotkeys listener: %v", err)
+		return Server{}, err
+	}
 	go func() {
 		if err := hkey_listner.StartListening(ctx); err != nil && err != context.Canceled {
 			bg_errs.NewError("HotKey listener crashed", err, errors.FATAL)

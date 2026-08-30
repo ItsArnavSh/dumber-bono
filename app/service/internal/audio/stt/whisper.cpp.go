@@ -100,7 +100,11 @@ func (w *Whisper) transcribe(ctx context.Context, wav []byte) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("network error during Groq API request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			log.Printf("[WHISPER ERROR] failed to close response body: %v", err)
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		var errResp map[string]any

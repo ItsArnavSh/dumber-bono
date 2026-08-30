@@ -8,7 +8,9 @@ import (
 
 func (s *Service) MyCarIndex() int {
 	var ID int
-	s.repo.Cache.Get(string(entity.GAMESESSION), string(entity.MYCARID), &ID)
+	if err := s.repo.Cache.Get(string(entity.GAMESESSION), string(entity.MYCARID), &ID); err != nil {
+		s.logger.Warnf("failed to get my car index: %v", err)
+	}
 	return ID
 }
 

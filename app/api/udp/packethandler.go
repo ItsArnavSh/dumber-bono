@@ -17,10 +17,13 @@ func (u *UDPServer) handle_packet(addr net.Addr, payload []byte) {
 
 	if err != nil {
 		u.logger.Errorf("Error Parsing Header %v", err)
+		return
 	}
 	if u.throttle.Allow() {
 		if header != nil {
-			u.service.IngestHeader(header)
+			if err := u.service.IngestHeader(header); err != nil {
+				u.logger.Errorf("Error ingesting header: %v", err)
+			}
 		}
 	}
 

@@ -33,12 +33,12 @@ func (h *CrossPlatformHotkeys) StartListening(ctx context.Context) error {
 		return fmt.Errorf("failed to register R key: %w", err)
 	}
 	if err := h.copyHK.Register(); err != nil {
-		h.radioHK.Unregister()
+		_ = h.radioHK.Unregister()
 		return fmt.Errorf("failed to register C key: %w", err)
 	}
 	if err := h.muteHK.Register(); err != nil {
-		h.radioHK.Unregister()
-		h.copyHK.Unregister()
+		_ = h.radioHK.Unregister()
+		_ = h.copyHK.Unregister()
 		return fmt.Errorf("failed to register M key: %w", err)
 	}
 

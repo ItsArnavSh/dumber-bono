@@ -1,0 +1,34 @@
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  enable:
+    - errcheck
+    - govet
+    - staticcheck
+    - unused
+    - ineffassign
+    - misspell
+    - unconvert
+    - prealloc
+    - noctx
+    - bodyclose
+    - sqlclosecheck
+  exclusions:
+    # Test files may use testing helpers that don't need exhaustive checks
+    rules:
+      - path: _test\.go
+        linters:
+          - errcheck
+          - bodyclose
+      # "Sargeant" is the proper noun of F1 driver Logan Sargeant
+      - path: app/types/entity/consts/f125-consts.go
+        linters:
+          - misspell
+
+formatters:
+  enable:
+    - gofmt
+    - goimports

@@ -3,7 +3,6 @@ package tts
 import (
 	"bufio"
 	"context"
-	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -109,14 +108,6 @@ func (w *wyomingConn) readMessage() (wyomingHeader, []byte, error) {
 	return hdr, payload, nil
 }
 
-func pcmBytesToInt16(b []byte) []int16 {
-	n := len(b) / 2
-	out := make([]int16, n)
-	for i := range n {
-		out[i] = int16(binary.LittleEndian.Uint16(b[i*2 : i*2+2]))
-	}
-	return out
-}
 func (t *TTS) synthesizeOne(ctx context.Context, wc *wyomingConn, sentence string, w io.Writer) error {
 	if err := wc.writeMessage("synthesize", synthesizeData{Text: sentence}, nil); err != nil {
 		return fmt.Errorf("send synthesize: %w", err)

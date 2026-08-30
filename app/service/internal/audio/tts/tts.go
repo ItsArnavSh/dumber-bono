@@ -4,17 +4,16 @@ import (
 	"context"
 	"io"
 	"net"
-	"sync"
 )
 
 type TTS struct {
 	wc      *wyomingConn
 	rawConn net.Conn
-	mu      sync.Mutex // guards synthesizeOne against concurrent calls
 }
 
-func NewTTS() (*TTS, error) {
-	rawConn, err := net.Dial("tcp", "127.0.0.1:10200")
+func NewTTS(ctx context.Context) (*TTS, error) {
+	dialer := net.Dialer{}
+	rawConn, err := dialer.DialContext(ctx, "tcp", "127.0.0.1:10200")
 	if err != nil {
 		return nil, err
 	}
@@ -29,10 +28,11 @@ func (t *TTS) Close() error {
 func (t *TTS) StringToPCM(ctx context.Context, sentence string) (io.Reader, error) {
 	pr, pw := io.Pipe()
 	go func() {
-		defer pw.Close()
 		if err := t.synthesizeOne(ctx, t.wc, sentence, pw); err != nil {
 			pw.CloseWithError(err)
+			return
 		}
+		_ = pw.Close()
 	}()
 	return pr, nil
 }

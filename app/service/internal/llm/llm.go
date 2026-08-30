@@ -91,7 +91,7 @@ func QueryLLM(ctx context.Context, systemPrompt, userPrompt, model string) (stri
 	if err != nil {
 		return "", fmt.Errorf("do request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -173,7 +173,7 @@ func StreamLLM(ctx context.Context, systemPrompt, userPrompt, model string, w io
 	if err != nil {
 		return fmt.Errorf("do request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		// Non-200: body is a plain JSON error object, not SSE. Read it all

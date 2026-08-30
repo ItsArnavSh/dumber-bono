@@ -3,6 +3,7 @@ package parsers
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 )
 
 type PacketHeader struct {
@@ -23,6 +24,9 @@ type PacketHeader struct {
 var HeaderSize = binary.Size(PacketHeader{})
 
 func ParseHeader(data []byte) (*PacketHeader, error) {
+	if len(data) < HeaderSize {
+		return nil, fmt.Errorf("parsers: payload too short (%d bytes, need %d)", len(data), HeaderSize)
+	}
 	var h PacketHeader
 	if err := binary.Read(bytes.NewReader(data[:HeaderSize]), binary.LittleEndian, &h); err != nil {
 		return nil, err

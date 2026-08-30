@@ -11,7 +11,7 @@ const (
 	CARSTATUS      NameSpace = "carstatus"
 	LOBBYINFO      NameSpace = "lobbyinfo"
 	CARDAMAGE      NameSpace = "cardamage"
-	SESSIONHISTORY NameSpace = "lobbyinfo"
+	SESSIONHISTORY NameSpace = "sessionhistory"
 	TYRESET        NameSpace = "tyreset"
 )
 

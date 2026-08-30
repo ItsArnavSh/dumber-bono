@@ -20,7 +20,7 @@ func NewDuckDB(ctx context.Context, path string) (*DuckDB, error) {
 		return nil, fmt.Errorf("open duckdb: %w", err)
 	}
 
-	if err := conn.Ping(); err != nil {
+	if err := conn.PingContext(ctx); err != nil {
 		return nil, fmt.Errorf("ping duckdb: %w", err)
 	}
 

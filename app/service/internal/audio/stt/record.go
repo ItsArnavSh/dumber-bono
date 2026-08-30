@@ -14,12 +14,20 @@ func (a *STT) recordAudio(ctx context.Context) {
 	if stream == nil {
 		return
 	}
-	defer stream.Close()
+	defer func() {
+		if err := stream.Close(); err != nil {
+			log.Printf("[STT ERROR] failed to close audio stream: %v", err)
+		}
+	}()
 
 	if err := stream.Start(); err != nil {
 		log.Fatal(err)
 	}
-	defer stream.Stop()
+	defer func() {
+		if err := stream.Stop(); err != nil {
+			log.Printf("[STT ERROR] failed to stop audio stream: %v", err)
+		}
+	}()
 
 	a.processAudioLoop(stream, samples)
 }
@@ -180,7 +188,9 @@ func (a *STT) finalizeRecording(buffer *[]int16, state *audioState) {
 }
 
 func (a *STT) Destructor() {
-	portaudio.Terminate()
+	if err := portaudio.Terminate(); err != nil {
+		log.Printf("[STT ERROR] failed to terminate portaudio: %v", err)
+	}
 }
 
 func pcm16ToBytes(samples []int16) []byte {

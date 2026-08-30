@@ -51,6 +51,10 @@ func (s *Service) EventMonitor(evt telentity.PacketEventData) {
 		s.handleSafetyCarEvent(d)
 	case telentity.Collision:
 		s.handleCollision(d)
+	case telentity.SpeedTrap:
+		s.handleSpeedTrap(d)
+	case telentity.StartLights:
+		s.handleStartLights(d)
 	default:
 		//Ignore unhandled events
 	}

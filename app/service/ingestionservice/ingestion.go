@@ -66,6 +66,7 @@ func (s *Service) IngestHeader(payload *parsers.PacketHeader) error {
 		sessionID = 0
 	}
 	if payload.SessionUID != sessionID {
+		s.logger.Infof("session changed from %d to %d", sessionID, payload.SessionUID)
 		// TODO: Nuke Current Session
 	}
 	if err := s.repo.Cache.Set(string(entity.GAMESESSION), string(entity.SESSIONID), payload.SessionUID); err != nil {
@@ -119,15 +120,25 @@ func (s *Service) IngestParticipantPacket(payload telentity.PacketParticipantsDa
 		// log and bail - can't cache anything meaningful without a valid player index
 		return
 	}
-	s.repo.Cache.Set(string(entity.GAMESESSION), string(entity.MYCARID), idx)
-	s.repo.Cache.Set(string(entity.GAMESESSION), string(entity.MYDRIVERID), me.DriverId)
-	s.repo.Cache.Set(string(entity.GAMESESSION), string(entity.MYTEAMID), me.TeamId)
-	s.repo.Cache.Set(string(entity.GAMESESSION), string(entity.MYRACEINDEX), me.RaceNumber)
+	if err := s.repo.Cache.Set(string(entity.GAMESESSION), string(entity.MYCARID), idx); err != nil {
+		s.logger.Errorf("failed to cache my car id: %v", err)
+	}
+	if err := s.repo.Cache.Set(string(entity.GAMESESSION), string(entity.MYDRIVERID), me.DriverId); err != nil {
+		s.logger.Errorf("failed to cache my driver id: %v", err)
+	}
+	if err := s.repo.Cache.Set(string(entity.GAMESESSION), string(entity.MYTEAMID), me.TeamId); err != nil {
+		s.logger.Errorf("failed to cache my team id: %v", err)
+	}
+	if err := s.repo.Cache.Set(string(entity.GAMESESSION), string(entity.MYRACEINDEX), me.RaceNumber); err != nil {
+		s.logger.Errorf("failed to cache my race index: %v", err)
+	}
 	if !s.participantThrottler.Allow() {
 		return
 	}
 	for i := range payload.NumActiveCars {
-		s.repo.Cache.Set(string(entity.PARTICIPANT), strconv.Itoa(int(i)), payload.Participants[i])
+		if err := s.repo.Cache.Set(string(entity.PARTICIPANT), strconv.Itoa(int(i)), payload.Participants[i]); err != nil {
+			s.logger.Errorf("failed to cache participant %d: %v", i, err)
+		}
 	}
 }
 
